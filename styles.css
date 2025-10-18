@@ -224,38 +224,52 @@
             background-color: #b54fb5;
         }
 
+        /* 📹 Contenedor principal */
+        /* 📹 Contenedor principal */
         .video-container {
-            position: relative;
             width: 100%;
-            max-width: 432px;
-            margin: 20px auto;
-            aspect-ratio: 432 / 574;
-            overflow: hidden;
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
-            background: none;
+            max-width: 700px;
+            /* ancho máximo en pantallas grandes */
+            margin: 30px auto;
+            padding: 0 10px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .video-container iframe {
+        /* 🎬 Video completamente responsive */
+        .video-container video {
             width: 100%;
-            height: 100%;
+            height: auto;
+            /* mantiene proporción del video original */
+            display: block;
             border: none;
             outline: none;
-            display: block;
-            object-fit: cover;
-        }
-
-        /* ✅ Pantalla completa (mantiene proporción correcta sin zoom) */
-        .video-container iframe:fullscreen,
-        .video-container iframe:-webkit-full-screen,
-        .video-container iframe:-moz-full-screen {
-            width: 100vw;
-            height: 100vh;
-            object-fit: contain !important;
             border-radius: 0;
             box-shadow: none;
+            object-fit: contain;
+            /* evita que se corte en resoluciones intermedias */
+            background-color: transparent;
+            max-height: 90vh;
+            /* opcional, evita que se desborde en pantallas muy bajas */
         }
+
+        /* ✅ Pantalla completa */
+        video:fullscreen,
+        video:-webkit-full-screen,
+        video:-moz-full-screen {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+            background-color: black;
+        }
+
+
+
+
+
+        /* 📱 Ajustes extra para pantallas muy chicas (320px) */
 
 
 
@@ -285,24 +299,35 @@
         }
 
         /* Estilo del contenedor del título principal */
-        .hero-title {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 400;
-            font-size: 2rem;
-            line-height: 1.3;
-            text-align: center;
-            text-transform: uppercase;
-            color: #ffffff;
-            margin-top: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
+        .main-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  text-align: center;
+  color: #fff;
+  line-height: 1.1;
+  margin: 40px auto 20px;
+  max-width: 900px;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  word-break: keep-all;
+  white-space: normal;
+}
 
-        /* ✨ Resaltado profesional con glow sutil */
-        .highlight-glow-line {
-            display: inline-block;
-            font-weight: 800;
-            color: #ffffff;
-            text-shadow: 0 0 10px rgba(255, 120, 255, 0.6),
-                0 0 20px rgba(160, 50, 255, 0.4);
-            font-weight: 900;
-        }
+.highlight-glow-line {
+  display: inline-block;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow:
+    0 0 10px rgba(255, 120, 255, 0.6),
+    0 0 20px rgba(160, 50, 255, 0.4),
+    0 0 30px rgba(160, 50, 255, 0.2);
+}
+
+/* 📱 Ajustes móviles */
+@media (max-width: 480px) {
+  .main-title {
+    font-size: 1.4rem;  /* más chico pero legible */
+    line-height: 1.2;
+    padding: 0 10px;
+    word-spacing: 2px;
+  }
+}

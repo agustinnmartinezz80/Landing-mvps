@@ -130,31 +130,101 @@
     </script>
 
     <script>
-        // ✅ Evento de visualización de contenido (ViewContent)
-        document.addEventListener("DOMContentLoaded", () => {
-            fbq('track', 'ViewContent', { content_name: 'LandingPage-MVP' });
-        });
+// Función para trackear eventos personalizados
+function trackPixelEvent(eventName, customData = {}) {
+    if (typeof fbq !== 'undefined') {
+        fbq('track', eventName, customData);
+        console.log('Evento trackeado:', eventName, customData);
+    }
+}
 
-        // ✅ Evento de click en botón de Asesoría Gratuita
-        const botonAsesoria = document.querySelector('#boton-asesoria');
-        if (botonAsesoria) {
-            botonAsesoria.addEventListener('click', () => {
-                fbq('trackCustom', 'click-asesoria-gratuita');
+// Evento de View Content (cuando se carga la página)
+document.addEventListener('DOMContentLoaded', function() {
+    // View Content - cuando el contenido principal es visible
+    if (typeof fbq !== 'undefined') {
+        fbq('track', 'ViewContent');
+    }
+});
+
+// Eventos para clics en botones
+document.addEventListener('DOMContentLoaded', function() {
+    // Trackear todos los clics en botones (ajusta el selector según tu HTML)
+    const buttons = document.querySelectorAll('button, .btn, [type="submit"], a.btn');
+    
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const buttonText = this.textContent.trim() || this.getAttribute('aria-label') || 'boton';
+            trackPixelEvent('ClickBoton', {
+                button_text: buttonText,
+                button_id: this.id || 'sin_id',
+                page_location: window.location.href
+            });
+        });
+    });
+});
+
+// Eventos para el formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form'); // Ajusta el selector según tu formulario
+    
+    if (form) {
+        // Eventos para cambios en inputs (respuestas)
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const question = this.name || this.getAttribute('data-question') || 'pregunta';
+                const answer = this.value;
+                
+                if (answer && answer.trim() !== '') {
+                    const eventName = `${question}-${answer}`.toLowerCase()
+                        .replace(/\s+/g, '-')
+                        .replace(/[^a-z0-9-]/g, '');
+                    
+                    trackPixelEvent(eventName, {
+                        pregunta: question,
+                        respuesta: answer,
+                        elemento: this.type || 'input'
+                    });
+                }
+            });
+        });
+        
+        // Evento adicional al enviar el formulario
+        form.addEventListener('submit', function(e) {
+            trackPixelEvent('FormularioCompletado', {
+                form_id: this.id || 'sin_id',
+                timestamp: new Date().toISOString()
+            });
+        });
+    }
+});
+
+// Evento para elementos específicos si los tienes
+// Por ejemplo, si tienes botones específicos con IDs:
+function setupSpecificButtons() {
+    // Ejemplo para botones específicos
+    const specificButtons = {
+        'cta-button': 'CTA Principal',
+        'contact-btn': 'Boton Contacto',
+        'whatsapp-btn': 'Boton WhatsApp'
+    };
+    
+    Object.keys(specificButtons).forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.addEventListener('click', function() {
+                trackPixelEvent('ClickEspecifico', {
+                    button_id: buttonId,
+                    button_name: specificButtons[buttonId]
+                });
             });
         }
+    });
+}
 
-        // ✅ Eventos por respuestas del formulario
-        // Cada radio/checkbox debe tener data attributes para identificar pregunta y respuesta
-        const respuestas = document.querySelectorAll('input[type="radio"][data-pregunta]');
-        respuestas.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const pregunta = e.target.dataset.pregunta;
-                const respuesta = e.target.value;
-                const evento = `${pregunta}-${respuesta}`.toLowerCase();
-                fbq('trackCustom', evento);
-                console.log("Evento enviado:", evento);
-            });
-        });
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', setupSpecificButtons);
     </script>
     <!-- Meta Pixel Code -->
     <script>

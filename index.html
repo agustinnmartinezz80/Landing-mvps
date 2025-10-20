@@ -8,7 +8,25 @@
     <link rel="stylesheet" href="styles.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
-
+    <!-- Meta Pixel Code -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return; n = f.fbq = function () {
+                n.callMethod ?
+                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = []; t = b.createElement(e); t.async = !0;
+            t.src = v; s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1125110379757394');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=1125110379757394&ev=PageView&noscript=1" /></noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 
 <body>
@@ -19,9 +37,6 @@
             EN UN PROYECTO<br>
             <span class="highlight-glow-line">REAL, RENTABLE Y VIABLE</span>
         </h1>
-
-
-
 
         <div class="video-container">
             <video controls playsinline>
@@ -128,6 +143,35 @@
             if (e.target === modal) modal.style.display = "none";
         });
     </script>
+
+    <script>
+        // ✅ Evento de visualización de contenido (ViewContent)
+        document.addEventListener("DOMContentLoaded", () => {
+            fbq('track', 'ViewContent', { content_name: 'LandingPage-MVP' });
+        });
+
+        // ✅ Evento de click en botón de Asesoría Gratuita
+        const botonAsesoria = document.querySelector('#boton-asesoria');
+        if (botonAsesoria) {
+            botonAsesoria.addEventListener('click', () => {
+                fbq('trackCustom', 'click-asesoria-gratuita');
+            });
+        }
+
+        // ✅ Eventos por respuestas del formulario
+        // Cada radio/checkbox debe tener data attributes para identificar pregunta y respuesta
+        const respuestas = document.querySelectorAll('input[type="radio"][data-pregunta]');
+        respuestas.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const pregunta = e.target.dataset.pregunta;
+                const respuesta = e.target.value;
+                const evento = `${pregunta}-${respuesta}`.toLowerCase();
+                fbq('trackCustom', evento);
+                console.log("Evento enviado:", evento);
+            });
+        });
+    </script>
+
 </body>
 
 </html>

@@ -129,148 +129,199 @@
         });
     </script>
 
-    <script>
-// Función para trackear eventos personalizados
-function trackPixelEvent(eventName, customData = {}) {
-    if (typeof fbq !== 'undefined') {
-        fbq('track', eventName, customData);
-        console.log('Evento trackeado:', eventName, customData);
-    }
-}
-
-// Función para normalizar nombres de eventos
-function normalizeEventName(text) {
-    return text.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '')
-        .substring(0, 40); // Limitar longitud por seguridad
-}
-
-// Evento de View Content (cuando se carga la página)
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof fbq !== 'undefined') {
-        fbq('track', 'ViewContent');
-    }
-    setupFormEvents();
-    setupButtonEvents();
-});
-
-// Configurar eventos del formulario
-function setupFormEvents() {
-    const forms = document.querySelectorAll('form');
-    
-    forms.forEach(form => {
-        // Eventos para cada opción en selects
-        const selects = form.querySelectorAll('select');
-        selects.forEach(select => {
-            select.addEventListener('change', function() {
-                const question = this.name || this.id || 'pregunta';
-                const answer = this.options[this.selectedIndex]?.text || this.value;
-                
-                if (answer && answer !== '') {
-                    const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
-                    trackPixelEvent(eventName, {
-                        pregunta: question,
-                        respuesta: answer,
-                        tipo: 'select'
-                    });
-                }
-            });
-        });
-        
-        // Eventos para radio buttons
-        const radioGroups = form.querySelectorAll('input[type="radio"]');
-        radioGroups.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked) {
-                    const question = this.name || 'pregunta';
-                    const answer = this.value || this.nextElementSibling?.textContent || 'opcion';
-                    
-                    const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
-                    trackPixelEvent(eventName, {
-                        pregunta: question,
-                        respuesta: answer,
-                        tipo: 'radio'
-                    });
-                }
-            });
-        });
-        
-        // Eventos para checkboxes
-        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const question = this.name || 'pregunta';
-                const answer = this.value || this.nextElementSibling?.textContent || 'opcion';
-                const action = this.checked ? 'seleccionado' : 'deseleccionado';
-                
-                const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}-${action}`;
-                trackPixelEvent(eventName, {
-                    pregunta: question,
-                    respuesta: answer,
-                    estado: action,
-                    tipo: 'checkbox'
-                });
-            });
-        });
-        
-        // Evento al enviar el formulario
-        form.addEventListener('submit', function(e) {
-            trackPixelEvent('FormularioCompletado', {
-                form_id: this.id || 'sin_id',
-                timestamp: new Date().toISOString()
-            });
-        });
-    });
-}
-
-// Configurar eventos de botones
-function setupButtonEvents() {
-    // Trackear todos los clics en botones
-    const buttons = document.querySelectorAll('button, .btn, [type="submit"], a.btn');
-    
-    buttons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            const buttonText = this.textContent.trim() || 
-                             this.getAttribute('aria-label') || 
-                             this.getAttribute('data-text') || 
-                             'boton';
-            
-            trackPixelEvent('ClickBoton', {
-                button_text: buttonText,
-                button_id: this.id || 'sin_id',
-                page_location: window.location.href
-            });
-        });
-    });
-}
-
-// Eventos específicos para elementos importantes
-function setupSpecificEvents() {
-    // Ejemplo para CTA específicos
-    const ctas = {
-        'cta-principal': 'CTA Principal',
-        'contacto-btn': 'Botón Contacto',
-        'whatsapp-btn': 'Botón WhatsApp',
-        'demo-btn': 'Botón Demo'
-    };
-    
-    Object.keys(ctas).forEach(buttonId => {
-        const button = document.getElementById(buttonId);
-        if (button) {
-            button.addEventListener('click', function() {
-                trackPixelEvent('ClickEspecifico', {
-                    button_id: buttonId,
-                    button_name: ctas[buttonId]
-                });
-            });
+<script>
+    // Función para trackear eventos personalizados
+    function trackPixelEvent(eventName, customData = {}) {
+        if (typeof fbq !== 'undefined') {
+            fbq('track', eventName, customData);
+            console.log('Evento trackeado:', eventName, customData);
         }
-    });
-}
+    }
 
-// Inicializar eventos específicos
-document.addEventListener('DOMContentLoaded', setupSpecificEvents);
-    </script>
+    // Función para normalizar nombres de eventos
+    function normalizeEventName(text) {
+        return text.toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .substring(0, 40);
+    }
+
+    // Función para obtener nombre único de pregunta
+    function getUniqueQuestionName(element, fallback = 'pregunta') {
+        // Prioridad de atributos para el nombre de la pregunta
+        return element.getAttribute('data-question-name') ||
+               element.getAttribute('data-question') ||
+               element.getAttribute('name') ||
+               element.getAttribute('id') ||
+               element.closest('.form-group')?.querySelector('label')?.textContent?.trim() ||
+               element.closest('.field')?.querySelector('label')?.textContent?.trim() ||
+               element.previousElementSibling?.textContent?.trim() ||
+               fallback;
+    }
+
+    // Evento de View Content (cuando se carga la página)
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof fbq !== 'undefined') {
+            fbq('track', 'ViewContent');
+        }
+        setupFormEvents();
+        setupButtonEvents();
+        setupSpecificEvents();
+    });
+
+    // Configurar eventos del formulario CON NOMBRES ÚNICOS
+    function setupFormEvents() {
+        const forms = document.querySelectorAll('form');
+        console.log('🔍 Formularios encontrados:', forms.length);
+
+        forms.forEach((form, formIndex) => {
+            console.log(`📋 Procesando formulario ${formIndex + 1}`);
+
+            // Eventos para cada opción en selects
+            const selects = form.querySelectorAll('select');
+            selects.forEach((select, selectIndex) => {
+                const uniqueQuestion = getUniqueQuestionName(select, `select-${selectIndex}`);
+                console.log(`📝 Select ${selectIndex + 1}: "${uniqueQuestion}"`);
+
+                select.addEventListener('change', function () {
+                    const question = uniqueQuestion;
+                    const answer = this.options[this.selectedIndex]?.text || this.value;
+
+                    if (answer && answer.trim() !== '' && !answer.includes('Selecciona')) {
+                        const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+                        console.log(`🎯 Disparando evento único: ${eventName}`);
+                        
+                        trackPixelEvent(eventName, {
+                            pregunta: question,
+                            respuesta: answer,
+                            tipo: 'select',
+                            elemento_id: this.id || 'sin-id'
+                        });
+                    }
+                });
+            });
+
+            // Eventos para radio buttons - AGRUPADOS POR GRUPO
+            const radioGroups = {};
+            const radios = form.querySelectorAll('input[type="radio"]');
+            
+            // Agrupar radios por nombre
+            radios.forEach(radio => {
+                const groupName = radio.getAttribute('name');
+                if (!radioGroups[groupName]) {
+                    radioGroups[groupName] = [];
+                }
+                radioGroups[groupName].push(radio);
+            });
+
+            // Configurar eventos para cada grupo
+            Object.keys(radioGroups).forEach((groupName, groupIndex) => {
+                const firstRadio = radioGroups[groupName][0];
+                const uniqueQuestion = getUniqueQuestionName(firstRadio, `radio-group-${groupIndex}`);
+                console.log(`📻 Grupo de radio: "${uniqueQuestion}"`);
+
+                radioGroups[groupName].forEach(radio => {
+                    radio.addEventListener('change', function () {
+                        if (this.checked) {
+                            const question = uniqueQuestion;
+                            const answer = this.value || 
+                                          this.nextElementSibling?.textContent?.trim() || 
+                                          this.closest('label')?.textContent?.trim() || 
+                                          'opcion';
+
+                            const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+                            console.log(`🎯 Disparando evento único: ${eventName}`);
+                            
+                            trackPixelEvent(eventName, {
+                                pregunta: question,
+                                respuesta: answer,
+                                tipo: 'radio',
+                                elemento_id: this.id || 'sin-id'
+                            });
+                        }
+                    });
+                });
+            });
+
+            // Eventos para checkboxes - CADA CHECKBOX INDEPENDIENTE
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox, checkboxIndex) => {
+                const uniqueQuestion = getUniqueQuestionName(checkbox, `checkbox-${checkboxIndex}`);
+                console.log(`☑️ Checkbox ${checkboxIndex + 1}: "${uniqueQuestion}"`);
+
+                checkbox.addEventListener('change', function () {
+                    const question = uniqueQuestion;
+                    const answer = this.value || 
+                                  this.nextElementSibling?.textContent?.trim() || 
+                                  this.closest('label')?.textContent?.trim() || 
+                                  'opcion';
+                    const action = this.checked ? 'seleccionado' : 'deseleccionado';
+
+                    const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}-${action}`;
+                    console.log(`🎯 Disparando evento único: ${eventName}`);
+                    
+                    trackPixelEvent(eventName, {
+                        pregunta: question,
+                        respuesta: answer,
+                        estado: action,
+                        tipo: 'checkbox',
+                        elemento_id: this.id || 'sin-id'
+                    });
+                });
+            });
+
+            // Evento al enviar el formulario
+            form.addEventListener('submit', function (e) {
+                trackPixelEvent('FormularioCompletado', {
+                    form_id: this.id || 'sin_id',
+                    timestamp: new Date().toISOString()
+                });
+            });
+        });
+    }
+
+    // Configurar eventos de botones (sin cambios)
+    function setupButtonEvents() {
+        const buttons = document.querySelectorAll('button, .btn, [type="submit"], a.btn');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                const buttonText = this.textContent.trim() ||
+                    this.getAttribute('aria-label') ||
+                    this.getAttribute('data-text') ||
+                    'boton';
+
+                trackPixelEvent('ClickBoton', {
+                    button_text: buttonText,
+                    button_id: this.id || 'sin_id',
+                    page_location: window.location.href
+                });
+            });
+        });
+    }
+
+    // Eventos específicos para elementos importantes (sin cambios)
+    function setupSpecificEvents() {
+        const ctas = {
+            'cta-principal': 'CTA Principal',
+            'contacto-btn': 'Botón Contacto',
+            'whatsapp-btn': 'Botón WhatsApp',
+            'demo-btn': 'Botón Demo'
+        };
+
+        Object.keys(ctas).forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.addEventListener('click', function () {
+                    trackPixelEvent('ClickEspecifico', {
+                        button_id: buttonId,
+                        button_name: ctas[buttonId]
+                    });
+                });
+            }
+        });
+    }
+</script>
     <!-- Meta Pixel Code -->
     <script>
         !(function (f, b, e, v, n, t, s) {

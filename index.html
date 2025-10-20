@@ -138,22 +138,104 @@ function trackPixelEvent(eventName, customData = {}) {
     }
 }
 
+// Función para normalizar nombres de eventos
+function normalizeEventName(text) {
+    return text.toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .substring(0, 40); // Limitar longitud por seguridad
+}
+
 // Evento de View Content (cuando se carga la página)
 document.addEventListener('DOMContentLoaded', function() {
-    // View Content - cuando el contenido principal es visible
     if (typeof fbq !== 'undefined') {
         fbq('track', 'ViewContent');
     }
+    setupFormEvents();
+    setupButtonEvents();
 });
 
-// Eventos para clics en botones
-document.addEventListener('DOMContentLoaded', function() {
-    // Trackear todos los clics en botones (ajusta el selector según tu HTML)
+// Configurar eventos del formulario
+function setupFormEvents() {
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        // Eventos para cada opción en selects
+        const selects = form.querySelectorAll('select');
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                const question = this.name || this.id || 'pregunta';
+                const answer = this.options[this.selectedIndex]?.text || this.value;
+                
+                if (answer && answer !== '') {
+                    const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+                    trackPixelEvent(eventName, {
+                        pregunta: question,
+                        respuesta: answer,
+                        tipo: 'select'
+                    });
+                }
+            });
+        });
+        
+        // Eventos para radio buttons
+        const radioGroups = form.querySelectorAll('input[type="radio"]');
+        radioGroups.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    const question = this.name || 'pregunta';
+                    const answer = this.value || this.nextElementSibling?.textContent || 'opcion';
+                    
+                    const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+                    trackPixelEvent(eventName, {
+                        pregunta: question,
+                        respuesta: answer,
+                        tipo: 'radio'
+                    });
+                }
+            });
+        });
+        
+        // Eventos para checkboxes
+        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const question = this.name || 'pregunta';
+                const answer = this.value || this.nextElementSibling?.textContent || 'opcion';
+                const action = this.checked ? 'seleccionado' : 'deseleccionado';
+                
+                const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}-${action}`;
+                trackPixelEvent(eventName, {
+                    pregunta: question,
+                    respuesta: answer,
+                    estado: action,
+                    tipo: 'checkbox'
+                });
+            });
+        });
+        
+        // Evento al enviar el formulario
+        form.addEventListener('submit', function(e) {
+            trackPixelEvent('FormularioCompletado', {
+                form_id: this.id || 'sin_id',
+                timestamp: new Date().toISOString()
+            });
+        });
+    });
+}
+
+// Configurar eventos de botones
+function setupButtonEvents() {
+    // Trackear todos los clics en botones
     const buttons = document.querySelectorAll('button, .btn, [type="submit"], a.btn');
     
     buttons.forEach(button => {
         button.addEventListener('click', function(e) {
-            const buttonText = this.textContent.trim() || this.getAttribute('aria-label') || 'boton';
+            const buttonText = this.textContent.trim() || 
+                             this.getAttribute('aria-label') || 
+                             this.getAttribute('data-text') || 
+                             'boton';
+            
             trackPixelEvent('ClickBoton', {
                 button_text: buttonText,
                 button_id: this.id || 'sin_id',
@@ -161,70 +243,33 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-});
+}
 
-// Eventos para el formulario
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form'); // Ajusta el selector según tu formulario
-    
-    if (form) {
-        // Eventos para cambios en inputs (respuestas)
-        const inputs = form.querySelectorAll('input, select, textarea');
-        
-        inputs.forEach(input => {
-            input.addEventListener('change', function() {
-                const question = this.name || this.getAttribute('data-question') || 'pregunta';
-                const answer = this.value;
-                
-                if (answer && answer.trim() !== '') {
-                    const eventName = `${question}-${answer}`.toLowerCase()
-                        .replace(/\s+/g, '-')
-                        .replace(/[^a-z0-9-]/g, '');
-                    
-                    trackPixelEvent(eventName, {
-                        pregunta: question,
-                        respuesta: answer,
-                        elemento: this.type || 'input'
-                    });
-                }
-            });
-        });
-        
-        // Evento adicional al enviar el formulario
-        form.addEventListener('submit', function(e) {
-            trackPixelEvent('FormularioCompletado', {
-                form_id: this.id || 'sin_id',
-                timestamp: new Date().toISOString()
-            });
-        });
-    }
-});
-
-// Evento para elementos específicos si los tienes
-// Por ejemplo, si tienes botones específicos con IDs:
-function setupSpecificButtons() {
-    // Ejemplo para botones específicos
-    const specificButtons = {
-        'cta-button': 'CTA Principal',
-        'contact-btn': 'Boton Contacto',
-        'whatsapp-btn': 'Boton WhatsApp'
+// Eventos específicos para elementos importantes
+function setupSpecificEvents() {
+    // Ejemplo para CTA específicos
+    const ctas = {
+        'cta-principal': 'CTA Principal',
+        'contacto-btn': 'Botón Contacto',
+        'whatsapp-btn': 'Botón WhatsApp',
+        'demo-btn': 'Botón Demo'
     };
     
-    Object.keys(specificButtons).forEach(buttonId => {
+    Object.keys(ctas).forEach(buttonId => {
         const button = document.getElementById(buttonId);
         if (button) {
             button.addEventListener('click', function() {
                 trackPixelEvent('ClickEspecifico', {
                     button_id: buttonId,
-                    button_name: specificButtons[buttonId]
+                    button_name: ctas[buttonId]
                 });
             });
         }
     });
 }
 
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', setupSpecificButtons);
+// Inicializar eventos específicos
+document.addEventListener('DOMContentLoaded', setupSpecificEvents);
     </script>
     <!-- Meta Pixel Code -->
     <script>

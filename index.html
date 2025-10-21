@@ -1,102 +1,352 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asesoría Gratuita - MVP</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <!-- META PIXEL CODE -->
-  <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window,document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '1125110379757394');
-    fbq('track', 'PageView');
-  </script>
-  <noscript>
-    <img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=1125110379757394&ev=PageView&noscript=1" />
-  </noscript>
-  <!-- END META PIXEL CODE -->
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asesoría Gratuita - MVP</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+
+
+
+
 </head>
 
 <body>
-  <section class="contenedor">
-    <h1>Convierte tu idea en un proyecto real, rentable y viable</h1>
+    <div class="container">
+        <p class="subtitle">Tu proyecto en marcha en tiempo récord</p>
+        <h1 class="main-title">
+            CONVIERTE TU IDEA<br>
+            EN UN PROYECTO<br>
+            <span class="highlight-glow-line">REAL, RENTABLE Y VIABLE</span>
+        </h1>
 
-    <button id="asesoriaBtn">Solicitar Asesoría Gratuita</button>
+        <div class="video-container">
+            <video controls playsinline>
+                <source src="Video-Explicacion.mp4" type="video/mp4">
+                Tu navegador no soporta videos HTML5.
+            </video>
+        </div>
 
-    <form id="formulario">
-      <h2>1. ¿Qué tipo de proyecto querés desarrollar?</h2>
-      <label><input type="radio" name="tipoProyecto" value="app"> App</label><br>
-      <label><input type="radio" name="tipoProyecto" value="software"> Software</label><br>
-      <label><input type="radio" name="tipoProyecto" value="otro"> Otro</label><br>
+        <button class="cta-button" id="startQuiz">Asesoría Gratuita</button>
 
-      <h2>2. ¿Cuántos empleados tiene tu empresa?</h2>
-      <label><input type="radio" name="empleados" value="1"> Solo yo</label><br>
-      <label><input type="radio" name="empleados" value="2a5"> De 2 a 5</label><br>
-      <label><input type="radio" name="empleados" value="10a50"> De 10 a 50</label><br>
-      <label><input type="radio" name="empleados" value="50plus"> Más de 50</label><br>
+        <div class="mvp-section">
+            <p>Un MVP<br>
+                <span class="tag-red">no es un producto incompleto</span><br>
+                Es <span class="tag-green">específico</span>
+            </p>
+            <hr>
+            <p>Agenda y entérate cómo tener uno listo y funcional en <b>30 días</b></p>
 
-      <h2>3. ¿Cuál es tu cargo?</h2>
-      <label><input type="radio" name="cargo" value="propietario"> Propietario</label><br>
-      <label><input type="radio" name="cargo" value="director"> Director</label><br>
-      <label><input type="radio" name="cargo" value="gerente"> Gerente</label><br>
-      <label><input type="radio" name="cargo" value="otro"> Otro</label><br>
+            <details class="accordion">
+                <summary>En tu diagnóstico vas a descubrir:</summary>
+                <p>✅ Si tu idea o proyecto tiene viabilidad técnica y comercial.</p>
+                <p>✅ Una estimación de inversión y tiempos realista.</p>
+                <p>✅ Cómo asegurar que el sistema pueda escalar sin rehacerse.</p>
+                <p>✅ Recomendaciones prácticas según el estado actual de tu negocio.</p>
+            </details>
 
-      <h2>4. ¿En qué plazo te gustaría iniciar?</h2>
-      <label><input type="radio" name="tiempo" value="cuanto-antes"> Cuanto antes</label><br>
-      <label><input type="radio" name="tiempo" value="1a2meses"> En 1 a 2 meses</label><br>
-      <label><input type="radio" name="tiempo" value="3meses"> Más de 3 meses</label><br>
+            <p class="note">*No es una reunión de venta. Es una conversación para entender tu proyecto, analizarlo y
+                darte claridad antes de avanzar.*</p>
+        </div>
 
-      <button type="submit" id="enviarBtn">Enviar</button>
-    </form>
-  </section>
 
-  <script>
-    // ====== EVENTO: VIEW CONTENT ======
-    document.addEventListener("DOMContentLoaded", () => {
-      fbq('track', 'ViewContent');
-      console.log("Evento: ViewContent");
-    });
 
-    // ====== EVENTO: CLICK EN ASESORÍA GRATUITA ======
-    const asesoriaBtn = document.getElementById("asesoriaBtn");
-    if (asesoriaBtn) {
-      asesoriaBtn.addEventListener("click", () => {
-        fbq('trackCustom', 'click-asesoria');
-        console.log("Evento: click-asesoria");
-      });
+        <footer>@Política y privacidad</footer>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="quizModal">
+        <div class="modal-content" id="quizContent">
+            <h3>Tipo de proyecto:</h3>
+            <div class="options" id="options"></div>
+            <button class="next-btn" id="nextBtn">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "Tipo de proyecto:",
+                options: ["APP", "Software", "Otro"]
+            },
+            {
+                question: "Cantidad de empleados en tu empresa:",
+                options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"]
+            },
+            {
+                question: "¿Cuál es tu cargo en la empresa?",
+                options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"]
+            },
+            {
+                question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?",
+                options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"]
+            }
+        ];
+
+        const modal = document.getElementById("quizModal");
+        const quizContent = document.getElementById("quizContent");
+        const optionsDiv = document.getElementById("options");
+        const nextBtn = document.getElementById("nextBtn");
+        let currentQuestion = 0;
+        let answers = [];
+
+        function loadQuestion() {
+            const q = quizData[currentQuestion];
+            quizContent.querySelector("h3").innerText = q.question;
+            optionsDiv.innerHTML = q.options.map((opt, i) => `
+        <input type="radio" id="opt${i}" name="option" value="${opt}">
+        <label for="opt${i}">${opt}</label>
+        `).join("");
+        }
+
+        document.getElementById("startQuiz").addEventListener("click", () => {
+            modal.style.display = "flex";
+            currentQuestion = 0;
+            answers = [];
+            loadQuestion();
+        });
+
+        nextBtn.addEventListener("click", () => {
+            const selected = document.querySelector("input[name='option']:checked");
+            if (!selected) {
+                alert("Selecciona una opción antes de continuar");
+                return;
+            }
+            answers.push(selected.value);
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                window.location.href = "https://calendar.app.google/ypeP2A1F6xXufmZj9";
+            }
+        });
+
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) modal.style.display = "none";
+        });
+    </script>
+
+<script>
+    // Función para trackear eventos personalizados
+    function trackPixelEvent(eventName, customData = {}) {
+        if (typeof fbq !== 'undefined') {
+            fbq('track', eventName, customData);
+            console.log('Evento trackeado:', eventName, customData);
+        }
     }
 
-    // ====== EVENTOS POR RESPUESTA DE FORMULARIO ======
-    document.querySelectorAll('input[type="radio"]').forEach(input => {
-      input.addEventListener("change", () => {
-        const pregunta = input.name.trim().toLowerCase().replace(/\s+/g, '-');
-        const respuesta = input.value.trim().toLowerCase().replace(/\s+/g, '-');
-        const evento = `${pregunta}-${respuesta}`;
-        fbq('trackCustom', evento);
-        console.log(`Evento enviado: ${evento}`);
-      });
+    // Función para normalizar nombres de eventos
+    function normalizeEventName(text) {
+        return text.toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .substring(0, 40);
+    }
+
+    // Función para obtener nombre único de pregunta
+    function getUniqueQuestionName(element, fallback = 'pregunta') {
+        // Prioridad de atributos para el nombre de la pregunta
+        return element.getAttribute('data-question-name') ||
+               element.getAttribute('data-question') ||
+               element.getAttribute('name') ||
+               element.getAttribute('id') ||
+               element.closest('.form-group')?.querySelector('label')?.textContent?.trim() ||
+               element.closest('.field')?.querySelector('label')?.textContent?.trim() ||
+               element.previousElementSibling?.textContent?.trim() ||
+               fallback;
+    }
+
+    // Evento de View Content (cuando se carga la página)
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof fbq !== 'undefined') {
+            fbq('track', 'ViewContent');
+        }
+        setupFormEvents();
+        setupButtonEvents();
+        setupSpecificEvents();
     });
 
-    // ====== EVENTO: ENVÍO DE FORMULARIO ======
-    const form = document.getElementById("formulario");
-    if (form) {
-      form.addEventListener("submit", e => {
-        e.preventDefault();
-        fbq('trackCustom', 'formulario-enviado');
-        console.log("Evento: formulario-enviado");
-        alert("Gracias por enviar tu formulario.");
-      });
+    // Configurar eventos del formulario CON NOMBRES ÚNICOS
+    function setupFormEvents() {
+        const forms = document.querySelectorAll('form');
+        console.log('🔍 Formularios encontrados:', forms.length);
+
+        forms.forEach((form, formIndex) => {
+            console.log(`📋 Procesando formulario ${formIndex + 1}`);
+
+            // Eventos para cada opción en selects
+            const selects = form.querySelectorAll('select');
+            selects.forEach((select, selectIndex) => {
+                const uniqueQuestion = getUniqueQuestionName(select, `select-${selectIndex}`);
+                console.log(`📝 Select ${selectIndex + 1}: "${uniqueQuestion}"`);
+
+                select.addEventListener('change', function () {
+                    const question = uniqueQuestion;
+                    const answer = this.options[this.selectedIndex]?.text || this.value;
+
+                    if (answer && answer.trim() !== '' && !answer.includes('Selecciona')) {
+                        const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+                        console.log(`🎯 Disparando evento único: ${eventName}`);
+                        
+                        trackPixelEvent(eventName, {
+                            pregunta: question,
+                            respuesta: answer,
+                            tipo: 'select',
+                            elemento_id: this.id || 'sin-id'
+                        });
+                    }
+                });
+            });
+
+            // Eventos para radio buttons - AGRUPADOS POR GRUPO
+            const radioGroups = {};
+            const radios = form.querySelectorAll('input[type="radio"]');
+            
+            // Agrupar radios por nombre
+            radios.forEach(radio => {
+                const groupName = radio.getAttribute('name');
+                if (!radioGroups[groupName]) {
+                    radioGroups[groupName] = [];
+                }
+                radioGroups[groupName].push(radio);
+            });
+
+            // Configurar eventos para cada grupo
+            Object.keys(radioGroups).forEach((groupName, groupIndex) => {
+                const firstRadio = radioGroups[groupName][0];
+                const uniqueQuestion = getUniqueQuestionName(firstRadio, `radio-group-${groupIndex}`);
+                console.log(`📻 Grupo de radio: "${uniqueQuestion}"`);
+
+                radioGroups[groupName].forEach(radio => {
+                    radio.addEventListener('change', function () {
+                        if (this.checked) {
+                            const question = uniqueQuestion;
+                            const answer = this.value || 
+                                          this.nextElementSibling?.textContent?.trim() || 
+                                          this.closest('label')?.textContent?.trim() || 
+                                          'opcion';
+
+                            const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+                            console.log(`🎯 Disparando evento único: ${eventName}`);
+                            
+                            trackPixelEvent(eventName, {
+                                pregunta: question,
+                                respuesta: answer,
+                                tipo: 'radio',
+                                elemento_id: this.id || 'sin-id'
+                            });
+                        }
+                    });
+                });
+            });
+
+            // Eventos para checkboxes - CADA CHECKBOX INDEPENDIENTE
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox, checkboxIndex) => {
+                const uniqueQuestion = getUniqueQuestionName(checkbox, `checkbox-${checkboxIndex}`);
+                console.log(`☑️ Checkbox ${checkboxIndex + 1}: "${uniqueQuestion}"`);
+
+                checkbox.addEventListener('change', function () {
+                    const question = uniqueQuestion;
+                    const answer = this.value || 
+                                  this.nextElementSibling?.textContent?.trim() || 
+                                  this.closest('label')?.textContent?.trim() || 
+                                  'opcion';
+                    const action = this.checked ? 'seleccionado' : 'deseleccionado';
+
+                    const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}-${action}`;
+                    console.log(`🎯 Disparando evento único: ${eventName}`);
+                    
+                    trackPixelEvent(eventName, {
+                        pregunta: question,
+                        respuesta: answer,
+                        estado: action,
+                        tipo: 'checkbox',
+                        elemento_id: this.id || 'sin-id'
+                    });
+                });
+            });
+
+            // Evento al enviar el formulario
+            form.addEventListener('submit', function (e) {
+                trackPixelEvent('FormularioCompletado', {
+                    form_id: this.id || 'sin_id',
+                    timestamp: new Date().toISOString()
+                });
+            });
+        });
     }
-  </script>
+
+    // Configurar eventos de botones (sin cambios)
+    function setupButtonEvents() {
+        const buttons = document.querySelectorAll('button, .btn, [type="submit"], a.btn');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                const buttonText = this.textContent.trim() ||
+                    this.getAttribute('aria-label') ||
+                    this.getAttribute('data-text') ||
+                    'boton';
+
+                trackPixelEvent('ClickBoton', {
+                    button_text: buttonText,
+                    button_id: this.id || 'sin_id',
+                    page_location: window.location.href
+                });
+            });
+        });
+    }
+
+    // Eventos específicos para elementos importantes (sin cambios)
+    function setupSpecificEvents() {
+        const ctas = {
+            'cta-principal': 'CTA Principal',
+            'contacto-btn': 'Botón Contacto',
+            'whatsapp-btn': 'Botón WhatsApp',
+            'demo-btn': 'Botón Demo'
+        };
+
+        Object.keys(ctas).forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.addEventListener('click', function () {
+                    trackPixelEvent('ClickEspecifico', {
+                        button_id: buttonId,
+                        button_name: ctas[buttonId]
+                    });
+                });
+            }
+        });
+    }
+</script>
+    <!-- Meta Pixel Code -->
+    <script>
+        !(function (f, b, e, v, n, t, s) {
+            if (f.fbq) return;
+            n = f.fbq = function () {
+                n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n;
+            n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = [];
+            t = b.createElement(e); t.async = !0;
+            t.src = v;
+            s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s);
+        })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+
+        fbq('init', '1125110379757394');
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=1125110379757394&ev=PageView&noscript=1" />
+    </noscript>
+    <!-- End Meta Pixel Code -->
+
 </body>
+
 </html>

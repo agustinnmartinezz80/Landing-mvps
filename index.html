@@ -84,6 +84,43 @@
         </div>
     </div>
 
+    <!-- Sección adicional -->
+<section class="extra-section">
+    <div class="extra-container">
+        <div class="extra-card familiar">
+            <h2>¿Te resulta familiar?</h2>
+            <p><b>Soluciones genéricas:</b> Buscas algo especializado y solo te ofrecen soluciones modelos
+                pre-diseñados.</p>
+            <p><b>Costes en aumento:</b> La competitividad requiere inversiones crecientes en recursos.</p>
+            <p><b>Proveedores que no cumplen:</b> Invertiste en empresas que no te dieron los resultados que prometían.</p>
+            <p><b>Está la idea, falta ejecución:</b> Tienes una gran idea de app móvil o de software, pero no sabes cómo
+                llevarla al mercado.</p>
+
+            <button class="cta-button info-btn">Más Información</button>
+        </div>
+
+        <div class="extra-card steps">
+            <div class="step">
+                <h3>1</h3>
+                <p><b>Formulario</b><br>Rellena el formulario o haz click en “conocer más”.</p>
+                <button class="cta-button info-btn">Conocer más</button>
+            </div>
+            <div class="step">
+                <h3>2</h3>
+                <p><b>Contacto</b><br>Nos pondremos en contacto para revisar los procesos y hacer una propuesta formal.</p>
+                <button class="cta-button info-btn">Más Información</button>
+            </div>
+            <div class="step">
+                <h3>3</h3>
+                <p><b>Inicio de proyecto</b><br>Con una inversión mínima, empezaremos a aplicar nuestros sistemas en tu negocio
+                    dando soporte humano en todas las etapas.</p>
+                <button class="cta-button info-btn">Más Información</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+
 <script>
     // === DATOS DEL QUIZ ===
     const quizData = [
@@ -215,6 +252,17 @@
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof fbq !== 'undefined') fbq('track', 'ViewContent');
     });
+
+    // Hacer que todos los botones "Más Información" abran el formulario
+document.querySelectorAll(".info-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        modal.style.display = "flex";
+        currentQuestion = 0;
+        answers = [];
+        loadQuestion();
+    });
+});
+
 </script>
 
 

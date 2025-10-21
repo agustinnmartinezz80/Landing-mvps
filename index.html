@@ -84,85 +84,137 @@
         </div>
     </div>
 
-    <script>
-        const quizData = [
-            { question: "Tipo de proyecto", options: ["APP", "Software", "Otro"], key: "proyecto" },
-            { question: "Cantidad de empleados en tu empresa", options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"], key: "empleados" },
-            { question: "¿Cuál es tu cargo en la empresa?", options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"], key: "cargo" },
-            { question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?", options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"], key: "tiempo" }
-        ];
+<script>
+    // === DATOS DEL QUIZ ===
+    const quizData = [
+        {
+            question: "Tipo de proyecto:",
+            options: ["APP", "Software", "Otro"]
+        },
+        {
+            question: "Cantidad de empleados en tu empresa:",
+            options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"]
+        },
+        {
+            question: "¿Cuál es tu cargo en la empresa?",
+            options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"]
+        },
+        {
+            question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?",
+            options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"]
+        }
+    ];
 
-        const modal = document.getElementById("quizModal");
-        const quizContent = document.getElementById("quizContent");
-        const optionsDiv = document.getElementById("options");
-        const nextBtn = document.getElementById("nextBtn");
-        const startQuiz = document.getElementById("startQuiz");
-        let currentQuestion = 0;
-        let answers = [];
+    const modal = document.getElementById("quizModal");
+    const quizContent = document.getElementById("quizContent");
+    const optionsDiv = document.getElementById("options");
+    const nextBtn = document.getElementById("nextBtn");
+    let currentQuestion = 0;
+    let answers = {};
 
-        // Track ViewContent al cargar la página
-        document.addEventListener("DOMContentLoaded", () => {
-            if (typeof fbq !== "undefined") fbq("track", "ViewContent");
-        });
+    // Función para trackear eventos personalizados
+    function trackPixelEvent(eventName, customData = {}) {
+        if (typeof fbq !== 'undefined') {
+            fbq('trackCustom', eventName, customData);
+            console.log('✅ Evento trackeado:', eventName, customData);
+        } else {
+            console.log('⚠️ fbq no definido, evento simulado:', eventName, customData);
+        }
+    }
 
-        // Track click en el botón principal
-        startQuiz.addEventListener("click", () => {
-            modal.style.display = "flex";
-            currentQuestion = 0;
-            answers = [];
-            loadQuestion();
-            if (typeof fbq !== "undefined") fbq("trackCustom", "ClickAsesoria");
-        });
+    // Normalizar nombres para eventos
+    function normalizeEventName(text) {
+        return text.toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .substring(0, 40);
+    }
 
-        // Cargar pregunta
-        function loadQuestion() {
-            const q = quizData[currentQuestion];
-            quizContent.querySelector("h3").innerText = q.question;
-            optionsDiv.innerHTML = q.options.map((opt, i) => `
-                <label class="option-label">
-                    <input type="radio" name="option" value="${opt}">
-                    <span>${opt}</span>
-                </label>
-            `).join("");
+    // === Lógica del quiz ===
+    function loadQuestion() {
+        const q = quizData[currentQuestion];
+        quizContent.querySelector("h3").innerText = q.question;
+        optionsDiv.innerHTML = q.options.map((opt, i) => `
+            <input type="radio" id="opt${currentQuestion}-${i}" name="option" value="${opt}">
+            <label for="opt${currentQuestion}-${i}">${opt}</label>
+        `).join("");
+    }
 
-            // Efecto visual de selección
-            document.querySelectorAll('.option-label input').forEach(input => {
-                input.addEventListener('change', () => {
-                    document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
-                    input.parentElement.classList.add('selected');
-                });
-            });
+    // Abrir modal al hacer clic en el botón principal
+    document.getElementById("startQuiz").addEventListener("click", () => {
+        modal.style.display = "flex";
+        currentQuestion = 0;
+        answers = {};
+        loadQuestion();
+    });
+
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+    });
+
+    // Siguiente pregunta
+    nextBtn.addEventListener("click", () => {
+        const selected = document.querySelector("input[name='option']:checked");
+        if (!selected) {
+            alert("Selecciona una opción antes de continuar");
+            return;
         }
 
-        // Siguiente pregunta
-        nextBtn.addEventListener("click", () => {
-            const selected = document.querySelector("input[name='option']:checked");
-            if (!selected) {
-                alert("Selecciona una opción antes de continuar");
-                return;
-            }
+        // Guardar respuesta
+        const question = quizData[currentQuestion].question;
+        const answer = selected.value;
+        answers[question] = answer;
 
-            const q = quizData[currentQuestion];
-            const answer = selected.value;
-            answers.push({ [q.key]: answer });
+        // Disparar evento individual por pregunta
+        const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+        trackPixelEvent(eventName, { pregunta: question, respuesta: answer });
 
-            // Evento individual por respuesta
-            const eventName = `${q.key}-${answer.replace(/\s+/g, '-').toLowerCase()}`;
-            if (typeof fbq !== "undefined") fbq("trackCustom", eventName);
+        // Avanzar
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            loadQuestion();
+        } else {
+            handleQuizCompletion();
+        }
+    });
 
-            currentQuestion++;
-            if (currentQuestion < quizData.length) {
-                loadQuestion();
-            } else {
-                if (typeof fbq !== "undefined") fbq("trackCustom", "FormularioCompletado");
-                window.location.href = "https://calendar.app.google/ypeP2A1F6xXufmZj9";
-            }
+    // === Lógica al completar el quiz ===
+    function handleQuizCompletion() {
+        // Determinar si el usuario es cualificado o no
+        const tipoProyecto = answers["Tipo de proyecto:"] || "";
+        const empleados = answers["Cantidad de empleados en tu empresa:"] || "";
+        const cargo = answers["¿Cuál es tu cargo en la empresa?"] || "";
+        const tiempo = answers["¿En cuánto tiempo te gustaría tener tu proyecto en marcha?"] || "";
+
+        let calificacion = "Cualificado";
+
+        // Reglas de descalificación
+        if (
+            (tipoProyecto === "Otro" && empleados === "Solo yo" && tiempo === "Más de 3 meses") ||
+            ((empleados === "De 10 a 50" || empleados === "+50") && cargo === "Otro")
+        ) {
+            calificacion = "No Cualificado";
+        }
+
+        // Disparar evento resumen
+        trackPixelEvent('FormularioCompletado', {
+            ...answers,
+            calificacion: calificacion,
+            timestamp: new Date().toISOString()
         });
 
-        modal.addEventListener("click", (e) => {
-            if (e.target === modal) modal.style.display = "none";
-        });
-    </script>
+        console.log("📩 Respuestas del quiz:", answers, "➡️ Calificación:", calificacion);
+
+        // Redirigir después del evento
+        window.location.href = "https://calendar.app.google/ypeP2A1F6xXufmZj9";
+    }
+
+    // === Evento general de vista ===
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof fbq !== 'undefined') fbq('track', 'ViewContent');
+    });
+</script>
 
 
 </body>

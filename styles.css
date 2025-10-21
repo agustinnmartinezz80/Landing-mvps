@@ -283,75 +283,137 @@
             transform: scale(1.02);
         }
 
-.extra-section {
-    background: linear-gradient(180deg, #200030, #320050);
-    color: #fff;
-    padding: 60px 20px;
-    text-align: center;
-    font-family: 'Montserrat', sans-serif;
-}
+        /* ==== SECCIÓN INFO EXTRA ==== */
+        .info-extra {
+            background: radial-gradient(circle at top left, #2d004b, #0c0017);
+            color: white;
+            font-family: "Montserrat", sans-serif;
+            padding: 60px 20px;
+            text-align: center;
+        }
 
-.extra-container {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    max-width: 900px;
-    margin: 0 auto;
-}
+        .info-card {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px 20px;
+            margin: 0 auto 60px;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.05);
+        }
 
-.extra-card {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-}
+        .info-card h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
 
-.extra-card h2 {
-    font-weight: 700;
-    margin-bottom: 20px;
-    font-size: 1.8rem;
-}
+        .info-card ul {
+            text-align: left;
+            margin-bottom: 20px;
+            list-style: none;
+            padding-left: 0;
+        }
 
-.extra-card p {
-    margin: 10px 0;
-    line-height: 1.5;
-}
+        .info-card li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
 
-.step {
-    margin-bottom: 30px;
-}
+        .info-card i {
+            color: #d065ff;
+            margin-right: 8px;
+        }
 
-.step h3 {
-    background-color: #6c2bd9;
-    color: white;
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 10px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: 700;
-}
+        .solucion {
+            margin: 20px 0 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
 
-.info-btn {
-    background-color: #a855f7;
-    color: white;
-    border: none;
-    padding: 10px 25px;
-    border-radius: 8px;
-    font-weight: 600;
-    margin-top: 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+        .btn-mas,
+        .btn-conocer {
+            background: linear-gradient(135deg, #a93cff, #7a00ff);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
 
-.info-btn:hover {
-    background-color: #9333ea;
-    transform: scale(1.05);
-}
+        .btn-mas:hover,
+        .btn-conocer:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #b65cff, #8a1cff);
+        }
+
+        /* ==== PASOS ==== */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: flex-start;
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            text-align: left;
+        }
+
+        .circle {
+            background: #7a00ff;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+        }
+
+        .step-text h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .step-text p {
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            color: #e0e0e0;
+        }
+
+        /* ==== RESPONSIVE ==== */
+        @media (max-width: 480px) {
+            .info-card h2 {
+                font-size: 1.3rem;
+            }
+
+            .step {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .circle {
+                margin-bottom: 10px;
+            }
+
+            .btn-mas {
+                width: 100%;
+            }
+        }
 
         /* 📱 Ajustes extra para pantallas muy chicas (320px) */
 

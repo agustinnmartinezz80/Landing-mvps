@@ -7,6 +7,8 @@
     <title>Asesoría Gratuita - MVP</title>
     <link rel="stylesheet" href="styles.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 
     <!-- Meta Pixel Code -->
     <script>
@@ -85,186 +87,202 @@
     </div>
 
     <!-- Sección adicional -->
-<section class="extra-section">
-    <div class="extra-container">
-        <div class="extra-card familiar">
+    <!-- Sección adicional -->
+    <section class="info-extra">
+        <div class="info-card">
             <h2>¿Te resulta familiar?</h2>
-            <p><b>Soluciones genéricas:</b> Buscas algo especializado y solo te ofrecen soluciones modelos
-                pre-diseñados.</p>
-            <p><b>Costes en aumento:</b> La competitividad requiere inversiones crecientes en recursos.</p>
-            <p><b>Proveedores que no cumplen:</b> Invertiste en empresas que no te dieron los resultados que prometían.</p>
-            <p><b>Está la idea, falta ejecución:</b> Tienes una gran idea de app móvil o de software, pero no sabes cómo
-                llevarla al mercado.</p>
-
-            <button class="cta-button info-btn">Más Información</button>
+            <ul>
+                <li><i class="fas fa-folder"></i> <strong>Soluciones genéricas:</strong> Buscás algo especializado y
+                    solo te ofrecen soluciones modelos pre-diseñados.</li>
+                <li><i class="fas fa-folder"></i> <strong>Costes en aumento:</strong> La competitividad requiere
+                    inversiones crecientes en recursos.</li>
+                <li><i class="fas fa-folder"></i> <strong>Proveedores que no cumplen:</strong> Invertiste en empresas
+                    que no te dieron los resultados que prometían.</li>
+                <li><i class="fas fa-folder"></i> <strong>Está la idea, falta ejecución:</strong> Tenés una gran idea de
+                    app móvil o de software, pero no sabés cómo llevarla al mercado.</li>
+            </ul>
+            <p class="solucion">TENEMOS LA SOLUCIÓN</p>
+            <button class="btn-mas" onclick="abrirFormulario()">Más Información</button>
         </div>
 
-        <div class="extra-card steps">
+        <div class="steps-container">
             <div class="step">
-                <h3>1</h3>
-                <p><b>Formulario</b><br>Rellena el formulario o haz click en “conocer más”.</p>
-                <button class="cta-button info-btn">Conocer más</button>
+                <div class="circle">1</div>
+                <div class="step-text">
+                    <h3>Formulario</h3>
+                    <p>Rellená el formulario o hacé click en "conocer más".</p>
+                    <button class="btn-conocer" onclick="abrirFormulario()">Conocer más</button>
+                </div>
             </div>
+
             <div class="step">
-                <h3>2</h3>
-                <p><b>Contacto</b><br>Nos pondremos en contacto para revisar los procesos y hacer una propuesta formal.</p>
-                <button class="cta-button info-btn">Más Información</button>
+                <div class="circle">2</div>
+                <div class="step-text">
+                    <h3>Contacto</h3>
+                    <p>Nos pondremos en contacto para revisar los procesos y hacer una propuesta formal.</p>
+                </div>
             </div>
+
             <div class="step">
-                <h3>3</h3>
-                <p><b>Inicio de proyecto</b><br>Con una inversión mínima, empezaremos a aplicar nuestros sistemas en tu negocio
-                    dando soporte humano en todas las etapas.</p>
-                <button class="cta-button info-btn">Más Información</button>
+                <div class="circle">3</div>
+                <div class="step-text">
+                    <h3>Inicio de proyecto</h3>
+                    <p>Con una inversión mínima, empezaremos a aplicar nuestros sistemas en tu negocio dando soporte
+                        humano en todas las etapas.</p>
+                </div>
             </div>
+
+            <button class="btn-mas" onclick="abrirFormulario()">Más Información</button>
         </div>
-    </div>
-</section>
+    </section>
 
 
-<script>
-    // === DATOS DEL QUIZ ===
-    const quizData = [
-        {
-            question: "Tipo de proyecto:",
-            options: ["APP", "Software", "Otro"]
-        },
-        {
-            question: "Cantidad de empleados en tu empresa:",
-            options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"]
-        },
-        {
-            question: "¿Cuál es tu cargo en la empresa?",
-            options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"]
-        },
-        {
-            question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?",
-            options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"]
+
+    <script>
+        // === DATOS DEL QUIZ ===
+        const quizData = [
+            {
+                question: "Tipo de proyecto:",
+                options: ["APP", "Software", "Otro"]
+            },
+            {
+                question: "Cantidad de empleados en tu empresa:",
+                options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"]
+            },
+            {
+                question: "¿Cuál es tu cargo en la empresa?",
+                options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"]
+            },
+            {
+                question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?",
+                options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"]
+            }
+        ];
+
+        const modal = document.getElementById("quizModal");
+        const quizContent = document.getElementById("quizContent");
+        const optionsDiv = document.getElementById("options");
+        const nextBtn = document.getElementById("nextBtn");
+        let currentQuestion = 0;
+        let answers = {};
+
+        // Función para trackear eventos personalizados
+        function trackPixelEvent(eventName, customData = {}) {
+            if (typeof fbq !== 'undefined') {
+                fbq('trackCustom', eventName, customData);
+                console.log('✅ Evento trackeado:', eventName, customData);
+            } else {
+                console.log('⚠️ fbq no definido, evento simulado:', eventName, customData);
+            }
         }
-    ];
 
-    const modal = document.getElementById("quizModal");
-    const quizContent = document.getElementById("quizContent");
-    const optionsDiv = document.getElementById("options");
-    const nextBtn = document.getElementById("nextBtn");
-    let currentQuestion = 0;
-    let answers = {};
-
-    // Función para trackear eventos personalizados
-    function trackPixelEvent(eventName, customData = {}) {
-        if (typeof fbq !== 'undefined') {
-            fbq('trackCustom', eventName, customData);
-            console.log('✅ Evento trackeado:', eventName, customData);
-        } else {
-            console.log('⚠️ fbq no definido, evento simulado:', eventName, customData);
+        // Normalizar nombres para eventos
+        function normalizeEventName(text) {
+            return text.toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
+                .substring(0, 40);
         }
-    }
 
-    // Normalizar nombres para eventos
-    function normalizeEventName(text) {
-        return text.toLowerCase()
-            .replace(/\s+/g, '-')
-            .replace(/[^a-z0-9-]/g, '')
-            .substring(0, 40);
-    }
-
-    // === Lógica del quiz ===
-    function loadQuestion() {
-        const q = quizData[currentQuestion];
-        quizContent.querySelector("h3").innerText = q.question;
-        optionsDiv.innerHTML = q.options.map((opt, i) => `
+        // === Lógica del quiz ===
+        function loadQuestion() {
+            const q = quizData[currentQuestion];
+            quizContent.querySelector("h3").innerText = q.question;
+            optionsDiv.innerHTML = q.options.map((opt, i) => `
             <input type="radio" id="opt${currentQuestion}-${i}" name="option" value="${opt}">
             <label for="opt${currentQuestion}-${i}">${opt}</label>
         `).join("");
-    }
-
-    // Abrir modal al hacer clic en el botón principal
-    document.getElementById("startQuiz").addEventListener("click", () => {
-        modal.style.display = "flex";
-        currentQuestion = 0;
-        answers = {};
-        loadQuestion();
-    });
-
-    // Cerrar modal al hacer clic fuera
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) modal.style.display = "none";
-    });
-
-    // Siguiente pregunta
-    nextBtn.addEventListener("click", () => {
-        const selected = document.querySelector("input[name='option']:checked");
-        if (!selected) {
-            alert("Selecciona una opción antes de continuar");
-            return;
         }
 
-        // Guardar respuesta
-        const question = quizData[currentQuestion].question;
-        const answer = selected.value;
-        answers[question] = answer;
-
-        // Disparar evento individual por pregunta
-        const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
-        trackPixelEvent(eventName, { pregunta: question, respuesta: answer });
-
-        // Avanzar
-        currentQuestion++;
-        if (currentQuestion < quizData.length) {
+        // Abrir modal al hacer clic en el botón principal
+        document.getElementById("startQuiz").addEventListener("click", () => {
+            modal.style.display = "flex";
+            currentQuestion = 0;
+            answers = {};
             loadQuestion();
-        } else {
-            handleQuizCompletion();
-        }
-    });
-
-    // === Lógica al completar el quiz ===
-    function handleQuizCompletion() {
-        // Determinar si el usuario es cualificado o no
-        const tipoProyecto = answers["Tipo de proyecto:"] || "";
-        const empleados = answers["Cantidad de empleados en tu empresa:"] || "";
-        const cargo = answers["¿Cuál es tu cargo en la empresa?"] || "";
-        const tiempo = answers["¿En cuánto tiempo te gustaría tener tu proyecto en marcha?"] || "";
-
-        let calificacion = "Cualificado";
-
-        // Reglas de descalificación
-        if (
-            (tipoProyecto === "Otro" && empleados === "Solo yo" && tiempo === "Más de 3 meses") ||
-            ((empleados === "De 10 a 50" || empleados === "+50") && cargo === "Otro")
-        ) {
-            calificacion = "No Cualificado";
-        }
-
-        // Disparar evento resumen
-        trackPixelEvent('FormularioCompletado', {
-            ...answers,
-            calificacion: calificacion,
-            timestamp: new Date().toISOString()
         });
 
-        console.log("📩 Respuestas del quiz:", answers, "➡️ Calificación:", calificacion);
+        // Cerrar modal al hacer clic fuera
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) modal.style.display = "none";
+        });
 
-        // Redirigir después del evento
-        window.open("https://calendar.app.google/ypeP2A1F6xXufmZj9", "_blank");
+        // Siguiente pregunta
+        nextBtn.addEventListener("click", () => {
+            const selected = document.querySelector("input[name='option']:checked");
+            if (!selected) {
+                alert("Selecciona una opción antes de continuar");
+                return;
+            }
 
-    }
+            // Guardar respuesta
+            const question = quizData[currentQuestion].question;
+            const answer = selected.value;
+            answers[question] = answer;
 
-    // === Evento general de vista ===
-    document.addEventListener('DOMContentLoaded', function () {
-        if (typeof fbq !== 'undefined') fbq('track', 'ViewContent');
-    });
+            // Disparar evento individual por pregunta
+            const eventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+            trackPixelEvent(eventName, { pregunta: question, respuesta: answer });
 
-    // Hacer que todos los botones "Más Información" abran el formulario
-document.querySelectorAll(".info-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        modal.style.display = "flex";
-        currentQuestion = 0;
-        answers = [];
-        loadQuestion();
-    });
-});
+            // Avanzar
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                handleQuizCompletion();
+            }
+        });
 
-</script>
+        // === Lógica al completar el quiz ===
+        function handleQuizCompletion() {
+            // Determinar si el usuario es cualificado o no
+            const tipoProyecto = answers["Tipo de proyecto:"] || "";
+            const empleados = answers["Cantidad de empleados en tu empresa:"] || "";
+            const cargo = answers["¿Cuál es tu cargo en la empresa?"] || "";
+            const tiempo = answers["¿En cuánto tiempo te gustaría tener tu proyecto en marcha?"] || "";
+
+            let calificacion = "Cualificado";
+
+            // Reglas de descalificación
+            if (
+                (tipoProyecto === "Otro" && empleados === "Solo yo" && tiempo === "Más de 3 meses") ||
+                ((empleados === "De 10 a 50" || empleados === "+50") && cargo === "Otro")
+            ) {
+                calificacion = "No Cualificado";
+            }
+
+            // Disparar evento resumen
+            trackPixelEvent('FormularioCompletado', {
+                ...answers,
+                calificacion: calificacion,
+                timestamp: new Date().toISOString()
+            });
+
+            console.log("📩 Respuestas del quiz:", answers, "➡️ Calificación:", calificacion);
+
+            // Redirigir después del evento
+            window.open("https://calendar.app.google/ypeP2A1F6xXufmZj9", "_blank");
+
+        }
+
+        // === Evento general de vista ===
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof fbq !== 'undefined') fbq('track', 'ViewContent');
+        });
+
+
+        function abrirFormulario() {
+            const btnAsesoria = document.querySelector('.boton-asesoria, .btn-asesoria');
+            if (btnAsesoria) {
+                btnAsesoria.click();
+            } else {
+                console.warn("No se encontró el botón de Asesoría gratuita");
+            }
+        }
+
+    </script>
 
 
 </body>
+
 </html>

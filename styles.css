@@ -5,6 +5,13 @@
             color: white;
             text-align: center;
             overflow-x: hidden;
+
+
+            background: radial-gradient(circle at top left, #3a0066, #0c0017 70%);
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            position: relative;
         }
 
         h1,
@@ -126,7 +133,7 @@
             margin-top: 2rem;
         }
 
-        /* Modal */
+        
         .modal {
             display: none;
             position: fixed;
@@ -176,7 +183,7 @@
             text-align: center;
         }
 
-        /* Opciones del multiple choice */
+        
         .options label {
             display: block;
             margin-bottom: 0.8rem;
@@ -199,7 +206,7 @@
             display: none;
         }
 
-        /* ✅ Cuando está seleccionada, cambia TODO el fondo */
+        
         input[type="radio"]:checked+label {
             background: #a33ba3;
             border-color: #e5b3ff;
@@ -224,12 +231,9 @@
             background-color: #b54fb5;
         }
 
-        /* 📹 Contenedor principal */
-        /* 📹 Contenedor principal */
         .video-container {
             width: 100%;
             max-width: 700px;
-            /* ancho máximo en pantallas grandes */
             margin: 30px auto;
             padding: 0 10px;
             box-sizing: border-box;
@@ -238,24 +242,20 @@
             align-items: center;
         }
 
-        /* 🎬 Video completamente responsive */
+
         .video-container video {
             width: 100%;
             height: auto;
-            /* mantiene proporción del video original */
             display: block;
             border: none;
             outline: none;
             border-radius: 0;
             box-shadow: none;
             object-fit: contain;
-            /* evita que se corte en resoluciones intermedias */
             background-color: transparent;
             max-height: 90vh;
-            /* opcional, evita que se desborde en pantallas muy bajas */
         }
 
-        /* ✅ Pantalla completa */
         video:fullscreen,
         video:-webkit-full-screen,
         video:-moz-full-screen {
@@ -283,7 +283,6 @@
             transform: scale(1.02);
         }
 
-        /* ==== SECCIÓN INFO EXTRA ==== */
         .info-extra {
             background: radial-gradient(circle at top left, #2d004b, #0c0017);
             color: white;
@@ -330,8 +329,8 @@
             letter-spacing: 1px;
         }
 
-        .btn-mas,
-        .btn-conocer {
+        .btn-info,
+        .more-info-btn {
             background: linear-gradient(135deg, #a93cff, #7a00ff);
             color: white;
             border: none;
@@ -342,13 +341,13 @@
             transition: transform 0.2s ease, background 0.3s ease;
         }
 
-        .btn-mas:hover,
-        .btn-conocer:hover {
+        .cta-info:hover,
+        .cta-info:hover {
             transform: scale(1.05);
             background: linear-gradient(135deg, #b65cff, #8a1cff);
         }
 
-        /* ==== PASOS ==== */
+
         .steps-container {
             display: flex;
             flex-direction: column;
@@ -395,7 +394,7 @@
             color: #e0e0e0;
         }
 
-        /* ==== RESPONSIVE ==== */
+
         @media (max-width: 480px) {
             .info-card h2 {
                 font-size: 1.3rem;
@@ -415,18 +414,14 @@
             }
         }
 
-        /* 📱 Ajustes extra para pantallas muy chicas (320px) */
 
-
-
-        /* Animación general al cargar la página */
         body {
             opacity: 0;
             transform: translateY(40px) scale(0.95);
             animation: zoomInUp 1.4s ease-out forwards;
         }
 
-        /* Definición de la animación */
+
         @keyframes zoomInUp {
             0% {
                 opacity: 0;
@@ -444,7 +439,7 @@
             }
         }
 
-        /* Estilo del contenedor del título principal */
+
         .main-title {
             font-family: 'Montserrat', sans-serif;
             font-weight: 800;
@@ -468,11 +463,10 @@
                 0 0 30px rgba(160, 50, 255, 0.2);
         }
 
-        /* 📱 Ajustes móviles */
+
         @media (max-width: 480px) {
             .main-title {
                 font-size: 1.4rem;
-                /* más chico pero legible */
                 line-height: 1.2;
                 padding: 0 10px;
                 word-spacing: 2px;

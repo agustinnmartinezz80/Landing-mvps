@@ -86,8 +86,6 @@
         </div>
     </div>
 
-    <!-- Sección adicional -->
-    <!-- Sección adicional -->
     <section class="info-extra">
         <div class="info-card">
             <h2>¿Te resulta familiar?</h2>
@@ -102,7 +100,7 @@
                     app móvil o de software, pero no sabés cómo llevarla al mercado.</li>
             </ul>
             <p class="solucion">TENEMOS LA SOLUCIÓN</p>
-            <button class="btn-mas" onclick="abrirFormulario()">Más Información</button>
+            <button class="more-info-btn" onclick="abrirFormulario()">Más Información</button>
         </div>
 
         <div class="steps-container">
@@ -111,7 +109,7 @@
                 <div class="step-text">
                     <h3>Formulario</h3>
                     <p>Rellená el formulario o hacé click en "conocer más".</p>
-                    <button class="btn-conocer" onclick="abrirFormulario()">Conocer más</button>
+                    <button class="btn-info" onclick="abrirFormulario()">Conocer más</button>
                 </div>
             </div>
 
@@ -132,7 +130,7 @@
                 </div>
             </div>
 
-            <button class="btn-mas" onclick="abrirFormulario()">Más Información</button>
+            <button class="more-info-btn" onclick="abrirFormulario()">Más Información</button>
         </div>
     </section>
 
@@ -280,7 +278,22 @@
             }
         }
 
-    </script>
+    // Seleccionamos todos los botones de "Más Información" y "Conocer más"
+    const infoButtons = document.querySelectorAll('.cta-info, .btn-info, .more-info-btn');
+
+    infoButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const modal = document.getElementById('quizModal');
+            modal.style.display = 'flex';
+            currentQuestion = 0;
+            answers = [];
+            loadQuestion();
+        });
+    });
+
+
+
+</script>
 
 
 </body>

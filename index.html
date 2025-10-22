@@ -63,7 +63,8 @@
             <p>Agenda y entérate cómo tener uno listo y funcional en <b>30 días</b></p>
 
             <details class="accordion">
-                <summary> <i class="fa fa-caret-down" aria-hidden="true"></i> En tu diagnóstico vas a descubrir:</summary>
+                <summary> <i class="fa fa-caret-down" aria-hidden="true"></i> En tu diagnóstico vas a descubrir:
+                </summary>
                 <p>✅ Si tu idea o proyecto tiene viabilidad técnica y comercial.</p>
                 <p>✅ Una estimación de inversión y tiempos realista.</p>
                 <p>✅ Cómo asegurar que el sistema pueda escalar sin rehacerse.</p>
@@ -278,22 +279,140 @@
             }
         }
 
-    // Seleccionamos todos los botones de "Más Información" y "Conocer más"
-    const infoButtons = document.querySelectorAll('.cta-info, .btn-info, .more-info-btn');
+        // Seleccionamos todos los botones de "Más Información" y "Conocer más"
+        const infoButtons = document.querySelectorAll('.cta-info, .btn-info, .more-info-btn');
 
-    infoButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const modal = document.getElementById('quizModal');
-            modal.style.display = 'flex';
-            currentQuestion = 0;
-            answers = [];
-            loadQuestion();
+        infoButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const modal = document.getElementById('quizModal');
+                modal.style.display = 'flex';
+                currentQuestion = 0;
+                answers = [];
+                loadQuestion();
+            });
         });
-    });
 
 
 
-</script>
+    </script>
+    <script>
+        // === CONFIGURACIÓN ===
+        const META_API_URL = "https://TU_WORKER_NAME.TUUSUARIO.workers.dev"; // ⚠️ Reemplazá con la URL de tu Worker Cloudflare
+
+        // === FUNCIONES ===
+
+        // Enviar evento a la API de Conversiones
+        function sendEventToMetaAPI(eventName, customData = {}) {
+            fetch(META_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    event_name: eventName,
+                    url: window.location.href,
+                    custom_data: customData
+                })
+            })
+                .then(res => console.log("📡 Evento enviado a API Meta:", eventName))
+                .catch(err => console.error("❌ Error enviando a API Meta:", err));
+        }
+
+        // Sobrescribir trackPixelEvent para enviar también a la API
+        const originalTrackPixelEvent = typeof trackPixelEvent !== "undefined" ? trackPixelEvent : () => { };
+
+        function trackPixelEvent(eventName, customData = {}) {
+            // Pixel Meta
+            if (typeof fbq !== "undefined") {
+                fbq("track", eventName, customData);
+                console.log("🎯 Pixel:", eventName, customData);
+            }
+
+            // API Meta (vía Cloudflare)
+            sendEventToMetaAPI(eventName, customData);
+        }
+
+        // === EVENTOS AUTOMÁTICOS ===
+
+        // 1️⃣ PageView
+        document.addEventListener("DOMContentLoaded", function () {
+            trackPixelEvent("PageView", { page: window.location.pathname });
+        });
+
+        // 2️⃣ ViewContent (cuando el usuario baja un poco)
+        window.addEventListener("scroll", function onScroll() {
+            if (window.scrollY > 150) {
+                trackPixelEvent("ViewContent", { scroll_depth: "150px+" });
+                window.removeEventListener("scroll", onScroll);
+            }
+        });
+
+        // 3️⃣ Eventos del formulario
+        const modal = document.getElementById("quizModal");
+        const optionsDiv = document.getElementById("options");
+        const nextBtn = document.getElementById("nextBtn");
+        const startBtn = document.getElementById("startQuiz");
+        let currentQuestion = 0;
+        let answers = [];
+
+        if (startBtn) {
+            startBtn.addEventListener("click", () => {
+                modal.style.display = "flex";
+                currentQuestion = 0;
+                answers = [];
+                trackPixelEvent("FormularioAbierto", { step: "inicio" });
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener("click", () => {
+                const selected = document.querySelector("input[name='option']:checked");
+                if (!selected) return alert("Selecciona una opción antes de continuar");
+
+                const question = document.querySelector("#quizContent h3").textContent.trim();
+                const answer = selected.value;
+
+                // 🔹 Evento por cada respuesta confirmada
+                trackPixelEvent(`${question}-${answer}`, { pregunta: question, respuesta: answer });
+
+                answers.push({ pregunta: question, respuesta: answer });
+                currentQuestion++;
+
+                if (currentQuestion < quizData.length) {
+                    loadQuestion();
+                } else {
+                    // 🔹 Evento final con TODAS las respuestas
+                    const calificable = evaluarCualificacion(answers);
+                    trackPixelEvent("FormularioCompletado", {
+                        respuestas: answers,
+                        estado: calificable ? "Cualificado" : "No Cualificado"
+                    });
+
+                    // Redirigir
+                    window.open("https://calendar.app.google/ypeP2A1F6xXufmZj9", "_blank");
+                    modal.style.display = "none";
+                }
+            });
+        }
+
+        // === FUNCIÓN DE CALIFICACIÓN AUTOMÁTICA ===
+        function evaluarCualificacion(answers) {
+            const get = (pregunta) =>
+                answers.find((a) => a.pregunta.includes(pregunta))?.respuesta.toLowerCase() || "";
+
+            const tipo = get("proyecto");
+            const empleados = get("empleados");
+            const cargo = get("cargo");
+            const tiempo = get("tiempo");
+
+            // 🚫 No cualificado según tus reglas
+            if (
+                (tipo === "otro" && empleados === "solo yo" && tiempo.includes("3")) ||
+                ((empleados === "10 a 50" || empleados === "+50") && cargo === "otro")
+            ) {
+                return false;
+            }
+            return true;
+        }
+    </script>
 
 
 </body>

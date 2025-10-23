@@ -137,14 +137,41 @@
 
 
 
-    <!-- ====================== -->
-    <!-- SCRIPT META API + EVENTOS -->
-    <!-- ====================== -->
     <script>
+        // --- CONFIGURACIÓN ---
+        const META_PIXEL_ID = "1125110379757394";
         const META_API_URL = "https://meta-api-worker.hamwenceslao-a.workers.dev/";
 
-        // --- Función para enviar evento a API ---
-        function sendMetaEvent(eventName, customData = {}) {
+        // --- INICIALIZAR PIXEL ---
+        !(function (f, b, e, v, n, t, s) {
+            if (f.fbq) return;
+            n = f.fbq = function () {
+                n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+            };
+            if (!f._fbq) f._fbq = n;
+            n.push = n;
+            n.loaded = !0;
+            n.version = "2.0";
+            n.queue = [];
+            t = b.createElement(e);
+            t.async = !0;
+            t.src = v;
+            s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s);
+        })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+        fbq("init", META_PIXEL_ID);
+        fbq("track", "PageView");
+
+        // --- FUNCIÓN UNIFICADA (Pixel + API) ---
+        function trackEvent(eventName, data = {}) {
+            console.log(`📡 Enviando evento: ${eventName}`, data);
+
+            // Enviar al Pixel
+            if (typeof fbq !== "undefined") {
+                fbq("trackCustom", eventName, data);
+            }
+
+            // Enviar a la API
             fetch(META_API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -152,92 +179,114 @@
                     event_name: eventName,
                     event_time: Math.floor(Date.now() / 1000),
                     user_data: {
-                        client_ip_address: "{{user_ip}}",
                         client_user_agent: navigator.userAgent
                     },
-                    custom_data: customData
+                    custom_data: data
                 })
-            })
-                .then(res => res.json())
-                .then(data => console.log(`✅ API Event sent: ${eventName}`, data))
-                .catch(err => console.error("❌ Error sending API event:", err));
+            }).catch((err) => console.warn("❌ Error enviando a API:", err));
         }
 
-        // --- Función unificada: Pixel + API ---
-        function trackEvent(eventName, data = {}) {
-            // Pixel
-            if (typeof fbq !== "undefined") {
-                fbq("trackCustom", eventName, data);
+        // --- MANEJO DEL MODAL Y FORMULARIO ---
+        const modal = document.getElementById("quizModal");
+        const quizContent = document.getElementById("quizContent");
+        const optionsDiv = document.getElementById("options");
+        const nextBtn = document.getElementById("nextBtn");
+        const startQuizBtn = document.getElementById("startQuiz");
+
+        const quizData = [
+            { question: "Tipo de proyecto:", options: ["APP", "Software", "Otro"] },
+            { question: "Cantidad de empleados en tu empresa:", options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"] },
+            { question: "¿Cuál es tu cargo en la empresa?", options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"] },
+            { question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?", options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"] }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+
+        function loadQuestion() {
+            const q = quizData[currentQuestion];
+            quizContent.querySelector("h3").innerText = q.question;
+            optionsDiv.innerHTML = q.options
+                .map((opt, i) => `
+        <input type="radio" id="opt${i}" name="option" value="${opt}">
+        <label for="opt${i}">${opt}</label>
+      `)
+                .join("");
+        }
+
+        // Abrir modal desde cualquier botón relevante
+        function abrirFormulario() {
+            modal.style.display = "flex";
+            currentQuestion = 0;
+            answers = {};
+            loadQuestion();
+            trackEvent("AbrirFormulario");
+        }
+
+        // Evento principal: abrir desde botón Asesoría Gratuita
+        startQuizBtn.addEventListener("click", abrirFormulario);
+
+        // También desde "Más información" o "Conocer más"
+        document.querySelectorAll("button, a").forEach((btn) => {
+            const texto = btn.textContent.toLowerCase();
+            if (texto.includes("información") || texto.includes("conocer más")) {
+                btn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    abrirFormulario();
+                });
             }
-            // API
-            sendMetaEvent(eventName, data);
-        }
-
-        // --- Eventos base ---
-        window.addEventListener("load", () => {
-            trackEvent("PageView");
-            trackEvent("ViewContent", { section: "LandingPrincipal" });
         });
 
-        // --- Formulario ---
-        const form = document.querySelector("form");
-        if (form) {
-            form.addEventListener("change", (e) => {
-                if (e.target.name && e.target.value) {
-                    trackEvent("FormularioRespuesta", {
-                        pregunta: e.target.name,
-                        respuesta: e.target.value
-                    });
-                }
-            });
+        // Avanzar entre preguntas
+        nextBtn.addEventListener("click", () => {
+            const selected = document.querySelector("input[name='option']:checked");
+            if (!selected) {
+                alert("Selecciona una opción antes de continuar");
+                return;
+            }
 
-            form.addEventListener("submit", (e) => {
-                e.preventDefault();
-                const formData = new FormData(form);
-                const respuestas = {};
-                formData.forEach((valor, clave) => (respuestas[clave] = valor));
+            const question = quizData[currentQuestion].question;
+            const answer = selected.value;
 
-                const tipoProyecto = respuestas["tipo_proyecto"];
-                const empleados = respuestas["cantidad_empleados"];
-                const tiempo = respuestas["tiempo"];
-                const cargo = respuestas["cargo"];
+            // Guardamos respuesta
+            answers[question] = answer;
+            trackEvent("FormularioRespuesta", { pregunta: question, respuesta: answer });
+
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                // Lógica de calificación
+                const tipoProyecto = answers["Tipo de proyecto:"];
+                const empleados = answers["Cantidad de empleados en tu empresa:"];
+                const tiempo = answers["¿En cuánto tiempo te gustaría tener tu proyecto en marcha?"];
+                const cargo = answers["¿Cuál es tu cargo en la empresa?"];
 
                 const noCualificado =
-                    (tipoProyecto === "otro" && empleados === "solo yo" && tiempo === "+3 meses") ||
-                    ((empleados === "10 a 50" || empleados === "+50") && cargo === "otro");
+                    (tipoProyecto === "Otro" && empleados === "Solo yo" && tiempo === "Más de 3 meses") ||
+                    ((empleados === "De 10 a 50" || empleados === "+50") && cargo === "Otro");
 
                 trackEvent("FormularioEnviado", {
                     cualificado: !noCualificado,
-                    respuestas
+                    respuestas: answers
                 });
 
-                alert("¡Gracias! Tu formulario fue enviado correctamente.");
-                form.reset();
-            });
-        }
-
-        // --- Botones que abren el formulario ---
-        function abrirFormulario() {
-            const formSection =
-                document.querySelector(".formulario") ||
-                document.querySelector("#formulario") ||
-                document.querySelector("form");
-            if (formSection) {
-                formSection.scrollIntoView({ behavior: "smooth", block: "start" });
-                trackEvent("AbrirFormularioDesdeBoton");
+                window.open("https://calendar.app.google/ypeP2A1F6xXufmZj9", "_blank");
+                modal.style.display = "none";
             }
-        }
+        });
 
-        const botones = Array.from(document.querySelectorAll("button, a"))
-            .filter((btn) => /asesor|conocer|informaci/i.test(btn.textContent.trim()));
+        // Cerrar modal al hacer clic afuera
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) modal.style.display = "none";
+        });
 
-        botones.forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-                e.preventDefault();
-                abrirFormulario();
-            });
+        // Evento de ViewContent inicial
+        document.addEventListener("DOMContentLoaded", () => {
+            trackEvent("ViewContent", { seccion: "LandingPrincipal" });
         });
     </script>
+
 
 
 

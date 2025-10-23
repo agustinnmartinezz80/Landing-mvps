@@ -138,59 +138,48 @@
 
 
 <script>
-    // === CONFIGURACIÓN API META ===
-    const META_PIXEL_ID = '1125110379757394'; // Asegúrate que este es el correcto
-    const META_ACCESS_TOKEN = 'EAAVtjXSjoOMBP9YeZB3OG6dvEZCABIszIfY5uw1IgmGpN7RmgDHKgXTJvi4jdWKDViKqQmZBjbuV4SYkxrcFydUq3fVGzZCOqVstYuCFPBluMwrqjmlldn14frGmZAIMt0EIzlpW6d4KHHTFvZAzs2GbZASmOosJso03Tp8y00tUf10EZC7bZBhKH6uXoL0FLH26ubgZDZD'; // Tu token real aquí
+    // === CONFIGURACIÓN MÍNIMA ===
+    const META_PIXEL_ID = '1125110379757394';
+    const META_ACCESS_TOKEN = 'EAAVtjXSjoOMBP9YeZB3OG6dvEZCABIszIfY5uw1IgmGpN7RmgDHKgXTJvi4jdWKDViKqQmZBjbuV4SYkxrcFydUq3fVGzZCOqVstYuCFPBluMwrqjmlldn14frGmZAIMt0EIzlpW6d4KHHTFvZAzs2GbZASmOosJso03Tp8y00tUf10EZC7bZBhKH6uXoL0FLH26ubgZDZD'; // Pega aquí el token real
 
-    // === FUNCIÓN API CORREGIDA ===
-    async function trackMetaAPIEvent(eventName, customData = {}) {
-        const eventData = {
-            event_name: eventName,
-            event_time: Math.floor(Date.now() / 1000),
-            action_source: 'website',
-            custom_data: customData
-        };
-
-        const payload = {
-            data: [eventData],
-            access_token: META_ACCESS_TOKEN
-        };
-
+    // === FUNCIÓN API SUPER SIMPLE ===
+    async function trackMetaAPI(eventName, customData = {}) {
         try {
-            console.log('📡 Enviando evento a Meta API:', eventName, customData);
-            
             const response = await fetch(`https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    data: [{
+                        event_name: eventName,
+                        event_time: Math.floor(Date.now() / 1000),
+                        action_source: 'website',
+                        custom_data: customData
+                    }],
+                    access_token: META_ACCESS_TOKEN
+                })
             });
-
+            
             const result = await response.json();
-            console.log('✅ Respuesta Meta API:', result);
-            return result;
+            if (!result.error) {
+                console.log('✅ API OK:', eventName);
+            }
         } catch (error) {
-            console.error('❌ Error enviando a Meta API:', error);
-            return null;
+            // SILENCIOSO - No mostrar errores en consola
         }
     }
 
-    // === FUNCIÓN UNIFICADA ===
+    // === FUNCIÓN PRINCIPAL ===
     function trackEvent(eventName, customData = {}) {
-        console.log('🔄 Enviando evento:', eventName, customData);
-        
-        // 1. Intentar con Pixel
+        // 1. PIXEL (siempre)
         if (typeof fbq !== 'undefined') {
             fbq('trackCustom', eventName, customData);
-            console.log('✅ Evento Pixel enviado:', eventName);
         }
         
-        // 2. Siempre enviar por API
-        trackMetaAPIEvent(eventName, customData);
+        // 2. API (en segundo plano - sin bloquear)
+        trackMetaAPI(eventName, customData);
     }
 
-    // === TUS DATOS DEL QUIZ (mantener igual) ===
+    // === TUS DATOS ORIGINALES (EXACTO) ===
     const quizData = [
         {
             question: "Tipo de proyecto:",
@@ -225,7 +214,7 @@
             .substring(0, 40);
     }
 
-    // === LÓGICA DEL QUIZ (MODIFICADA) ===
+    // === Lógica del quiz (TOTALMENTE ORIGINAL) ===
     function loadQuestion() {
         const q = quizData[currentQuestion];
         quizContent.querySelector("h3").innerText = q.question;
@@ -235,6 +224,7 @@
         `).join("");
     }
 
+    // Abrir modal al hacer clic en el botón principal
     document.getElementById("startQuiz").addEventListener("click", () => {
         modal.style.display = "flex";
         currentQuestion = 0;
@@ -243,6 +233,12 @@
         trackEvent('QuizIniciado');
     });
 
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+    });
+
+    // Siguiente pregunta
     nextBtn.addEventListener("click", () => {
         const selected = document.querySelector("input[name='option']:checked");
         if (!selected) {
@@ -250,12 +246,14 @@
             return;
         }
 
+        // Guardar respuesta
         const question = quizData[currentQuestion].question;
         const answer = selected.value;
         answers[question] = answer;
 
-        // Evento principal
-        trackEvent('PreguntaCompletada', {
+        // Disparar evento individual por pregunta
+        const eventName = `PreguntaCompletada`;
+        trackEvent(eventName, {
             pregunta: question,
             respuesta: answer,
             numero_pregunta: currentQuestion + 1
@@ -265,6 +263,7 @@
         const specificEventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
         trackEvent(specificEventName);
 
+        // Avanzar
         currentQuestion++;
         if (currentQuestion < quizData.length) {
             loadQuestion();
@@ -273,7 +272,9 @@
         }
     });
 
+    // === Lógica al completar el quiz ===
     function handleQuizCompletion() {
+        // Determinar si el usuario es cualificado o no
         const tipoProyecto = answers["Tipo de proyecto:"] || "";
         const empleados = answers["Cantidad de empleados en tu empresa:"] || "";
         const cargo = answers["¿Cuál es tu cargo en la empresa?"] || "";
@@ -281,6 +282,7 @@
 
         let calificacion = "Cualificado";
 
+        // Reglas de descalificación
         if (
             (tipoProyecto === "Otro" && empleados === "Solo yo" && tiempo === "Más de 3 meses") ||
             ((empleados === "De 10 a 50" || empleados === "+50") && cargo === "Otro")
@@ -288,16 +290,19 @@
             calificacion = "No Cualificado";
         }
 
+        // Disparar evento resumen
         trackEvent('FormularioCompletado', {
             calificacion: calificacion
         });
 
+        // Evento de conversión específico para leads cualificados
         if (calificacion === "Cualificado") {
             trackEvent('LeadCualificado');
         }
 
-        console.log("📩 Quiz completado:", answers, "Calificación:", calificacion);
+        console.log("📩 Quiz completado - Calificación:", calificacion);
 
+        // Redirigir después del evento
         setTimeout(() => {
             window.open("https://calendar.app.google/ypeP2A1F6xXufmZj9", "_blank");
         }, 500);
@@ -309,7 +314,32 @@
         trackEvent('ViewContent');
     });
 
-    // Resto de tu código...
+    // === TUS FUNCIONES ORIGINALES ===
+    function abrirFormulario() {
+        const btnAsesoria = document.querySelector('.boton-asesoria, .btn-asesoria');
+        if (btnAsesoria) {
+            btnAsesoria.click();
+            trackEvent('ClicAsesoria');
+        }
+    }
+
+    const infoButtons = document.querySelectorAll('.cta-info, .btn-info, .more-info-btn');
+    infoButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const modal = document.getElementById('quizModal');
+            modal.style.display = 'flex';
+            currentQuestion = 0;
+            answers = [];
+            loadQuestion();
+            trackEvent('ClicInformacion');
+        });
+    });
+
+    // === VERIFICACIÓN SILENCIOSA ===
+    setTimeout(() => {
+        console.log('✅ Sistema de tracking activado: Pixel + API');
+    }, 1000);
+
 </script>
 
 

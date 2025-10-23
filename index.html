@@ -141,12 +141,9 @@
     <!-- SCRIPT META API + EVENTOS -->
     <!-- ====================== -->
     <script>
-        // ======================
-        // CONFIGURACIÓN
-        // ======================
         const META_API_URL = "https://meta-api-worker.hamwenceslao-a.workers.dev/";
 
-        // Función genérica para enviar evento a Meta API
+        // --- Función para enviar evento a API ---
         function sendMetaEvent(eventName, customData = {}) {
             fetch(META_API_URL, {
                 method: "POST",
@@ -162,50 +159,44 @@
                 })
             })
                 .then(res => res.json())
-                .then(data => console.log(`✅ Evento enviado: ${eventName}`, data))
-                .catch(err => console.error("❌ Error al enviar evento:", err));
+                .then(data => console.log(`✅ API Event sent: ${eventName}`, data))
+                .catch(err => console.error("❌ Error sending API event:", err));
         }
 
-        // ======================
-        // EVENTOS AUTOMÁTICOS
-        // ======================
+        // --- Función unificada: Pixel + API ---
+        function trackEvent(eventName, data = {}) {
+            // Pixel
+            if (typeof fbq !== "undefined") {
+                fbq("trackCustom", eventName, data);
+            }
+            // API
+            sendMetaEvent(eventName, data);
+        }
 
-        // 1️⃣ Evento de visualización de página
-        window.addEventListener("load", () => sendMetaEvent("PageView"));
-
-        // 2️⃣ Evento de visualización de contenido
-        document.addEventListener("DOMContentLoaded", () => {
-            sendMetaEvent("ViewContent", { section: "LandingPrincipal" });
+        // --- Eventos base ---
+        window.addEventListener("load", () => {
+            trackEvent("PageView");
+            trackEvent("ViewContent", { section: "LandingPrincipal" });
         });
 
-        // ======================
-        // FORMULARIO
-        // ======================
+        // --- Formulario ---
         const form = document.querySelector("form");
-
         if (form) {
-            // Evento cuando se cambia una respuesta del formulario
             form.addEventListener("change", (e) => {
                 if (e.target.name && e.target.value) {
-                    sendMetaEvent("FormularioRespuesta", {
+                    trackEvent("FormularioRespuesta", {
                         pregunta: e.target.name,
                         respuesta: e.target.value
                     });
                 }
             });
 
-            // Evento cuando se envía el formulario
             form.addEventListener("submit", (e) => {
                 e.preventDefault();
-
-                // Recolectar todas las respuestas
                 const formData = new FormData(form);
                 const respuestas = {};
-                formData.forEach((valor, clave) => {
-                    respuestas[clave] = valor;
-                });
+                formData.forEach((valor, clave) => (respuestas[clave] = valor));
 
-                // Condiciones para usuario no cualificado
                 const tipoProyecto = respuestas["tipo_proyecto"];
                 const empleados = respuestas["cantidad_empleados"];
                 const tiempo = respuestas["tiempo"];
@@ -215,43 +206,37 @@
                     (tipoProyecto === "otro" && empleados === "solo yo" && tiempo === "+3 meses") ||
                     ((empleados === "10 a 50" || empleados === "+50") && cargo === "otro");
 
-                sendMetaEvent("FormularioEnviado", {
+                trackEvent("FormularioEnviado", {
                     cualificado: !noCualificado,
-                    respuestas: respuestas
+                    respuestas
                 });
 
-                // Enviar también al pixel si existe
-                if (typeof fbq !== "undefined") {
-                    fbq("track", "Lead", { cualificado: !noCualificado });
-                }
-
-                // Mostrar confirmación
                 alert("¡Gracias! Tu formulario fue enviado correctamente.");
+                form.reset();
             });
         }
 
-        // ======================
-        // BOTONES
-        // ======================
-
-        // Función para abrir el formulario
+        // --- Botones que abren el formulario ---
         function abrirFormulario() {
-            const formSection = document.querySelector(".formulario, #formulario, form");
+            const formSection =
+                document.querySelector(".formulario") ||
+                document.querySelector("#formulario") ||
+                document.querySelector("form");
             if (formSection) {
-                formSection.scrollIntoView({ behavior: "smooth" });
+                formSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                trackEvent("AbrirFormularioDesdeBoton");
             }
-            sendMetaEvent("AbrirFormularioDesdeBoton");
         }
 
-        // Asignar eventos a botones
-        document.querySelectorAll("button.mas-info, .mas-info, .btn-mas-info, .btn-conocer-mas, .conocer-mas").forEach(btn => {
-            btn.addEventListener("click", abrirFormulario);
-        });
+        const botones = Array.from(document.querySelectorAll("button, a"))
+            .filter((btn) => /asesor|conocer|informaci/i.test(btn.textContent.trim()));
 
-        // ======================
-        // DEBUG VISUAL
-        // ======================
-        console.log("📡 Script Meta API cargado correctamente");
+        botones.forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                abrirFormulario();
+            });
+        });
     </script>
 
 

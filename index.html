@@ -137,231 +137,144 @@
 
 
 
-<script>
-    // === CONFIGURACIÓN API META ===
-    const META_PIXEL_ID = '112510379757384';
-    const META_ACCESS_TOKEN = 'TU_ACCESS_TOKEN_REAL'; // Usa el token real
+    <script>
+        const META_API_URL = "https://meta-api-worker.hamwenceslao-a.workers.dev/";
 
-    // === DATOS DEL QUIZ ===
-    const quizData = [
-        {
-            question: "Tipo de proyecto:",
-            options: ["APP", "Software", "Otro"]
-        },
-        {
-            question: "Cantidad de empleados en tu empresa:",
-            options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"]
-        },
-        {
-            question: "¿Cuál es tu cargo en la empresa?",
-            options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"]
-        },
-        {
-            question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?",
-            options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"]
-        }
-    ];
-
-    const modal = document.getElementById("quizModal");
-    const quizContent = document.getElementById("quizContent");
-    const optionsDiv = document.getElementById("options");
-    const nextBtn = document.getElementById("nextBtn");
-    let currentQuestion = 0;
-    let answers = {};
-
-    // === FUNCIÓN CORREGIDA PARA API META ===
-    async function trackMetaAPIEvent(eventName, customData = {}) {
-        const eventData = {
-            event_name: eventName,
-            event_time: Math.floor(Date.now() / 1000),
-            action_source: 'website',
-            custom_data: customData  // ✅ AHORA SÍ envía los parámetros
-        };
-
-        const payload = {
-            data: [eventData],
-            access_token: META_ACCESS_TOKEN
-        };
-
-        try {
-            const response = await fetch(`https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-            console.log('✅ Evento API Meta enviado:', eventName, customData);
-            return result;
-        } catch (error) {
-            console.error('❌ Error enviando evento API Meta:', error);
-            return null;
-        }
-    }
-
-    // === FUNCIÓN PRINCIPAL CORREGIDA ===
-    function trackPixelEvent(eventName, customData = {}) {
-        // Disparar Pixel con parámetros
-        if (typeof fbq !== 'undefined') {
-            fbq('trackCustom', eventName, customData);
-            console.log('✅ Evento Pixel trackeado:', eventName, customData);
+        // Función general para enviar eventos a tu Worker (Conversions API)
+        async function sendMetaEvent(eventName, customData = {}) {
+            try {
+                await fetch(META_API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        event_name: eventName,
+                        event_time: Math.floor(Date.now() / 1000),
+                        event_source_url: window.location.href,
+                        action_source: "website",
+                        user_data: {
+                            client_user_agent: navigator.userAgent
+                        },
+                        custom_data: customData
+                    })
+                });
+                console.log("✅ Evento enviado a Meta API:", eventName, customData);
+            } catch (err) {
+                console.error("❌ Error al enviar evento:", err);
+            }
         }
 
-        // Enviar por API con los mismos parámetros
-        trackMetaAPIEvent(eventName, customData);
-    }
-
-    // Normalizar nombres para eventos
-    function normalizeEventName(text) {
-        return text.toLowerCase()
-            .replace(/\s+/g, '-')
-            .replace(/[^a-z0-9-]/g, '')
-            .substring(0, 40);
-    }
-
-    // === LÓGICA DEL QUIZ (CON PARÁMETROS) ===
-    function loadQuestion() {
-        const q = quizData[currentQuestion];
-        quizContent.querySelector("h3").innerText = q.question;
-        optionsDiv.innerHTML = q.options.map((opt, i) => `
-            <input type="radio" id="opt${currentQuestion}-${i}" name="option" value="${opt}">
-            <label for="opt${currentQuestion}-${i}">${opt}</label>
-        `).join("");
-    }
-
-    // Abrir modal
-    document.getElementById("startQuiz").addEventListener("click", () => {
-        modal.style.display = "flex";
-        currentQuestion = 0;
-        answers = {};
-        loadQuestion();
-        
-        trackPixelEvent('QuizIniciado', {
-            quiz_type: 'lead_generation',
-            source: 'boton_principal'
-        });
-    });
-
-    // Siguiente pregunta
-    nextBtn.addEventListener("click", () => {
-        const selected = document.querySelector("input[name='option']:checked");
-        if (!selected) {
-            alert("Selecciona una opción antes de continuar");
-            return;
-        }
-
-        const question = quizData[currentQuestion].question;
-        const answer = selected.value;
-        answers[question] = answer;
-
-        // ✅ EVENTO CON PARÁMETROS COMPLETOS
-        trackPixelEvent('PreguntaCompletada', {
-            pregunta: question,
-            respuesta: answer,
-            numero_pregunta: currentQuestion + 1,
-            total_preguntas: quizData.length,
-            progreso: Math.round((currentQuestion + 1) / quizData.length * 100) + '%'
+        // Enviar evento PageView al cargar la página
+        document.addEventListener("DOMContentLoaded", () => {
+            sendMetaEvent("PageView");
         });
 
-        // ✅ EVENTO ESPECÍFICO CON PARÁMETROS
-        const specificEventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
-        trackPixelEvent(specificEventName, {
-            pregunta: question,
-            respuesta: answer,
-            question_id: currentQuestion
-        });
+        // --- Eventos del formulario ---
+        const quizData = [
+            {
+                question: "Tipo de proyecto:",
+                options: ["APP", "Software", "Otro"]
+            },
+            {
+                question: "Cantidad de empleados en tu empresa:",
+                options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"]
+            },
+            {
+                question: "¿Cuál es tu cargo en la empresa?",
+                options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"]
+            },
+            {
+                question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?",
+                options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"]
+            }
+        ];
 
-        currentQuestion++;
-        if (currentQuestion < quizData.length) {
-            loadQuestion();
-        } else {
-            handleQuizCompletion();
-        }
-    });
+        const modal = document.getElementById("quizModal");
+        const quizContent = document.getElementById("quizContent");
+        const optionsDiv = document.getElementById("options");
+        const nextBtn = document.getElementById("nextBtn");
+        let currentQuestion = 0;
+        let answers = [];
 
-    // === AL COMPLETAR EL QUIZ ===
-    function handleQuizCompletion() {
-        const tipoProyecto = answers["Tipo de proyecto:"] || "";
-        const empleados = answers["Cantidad de empleados en tu empresa:"] || "";
-        const cargo = answers["¿Cuál es tu cargo en la empresa?"] || "";
-        const tiempo = answers["¿En cuánto tiempo te gustaría tener tu proyecto en marcha?"] || "";
-
-        let calificacion = "Cualificado";
-        let lead_score = 100;
-
-        if (
-            (tipoProyecto === "Otro" && empleados === "Solo yo" && tiempo === "Más de 3 meses") ||
-            ((empleados === "De 10 a 50" || empleados === "+50") && cargo === "Otro")
-        ) {
-            calificacion = "No Cualificado";
-            lead_score = 30;
-        }
-
-        // ✅ EVENTO FINAL CON TODOS LOS PARÁMETROS
-        trackPixelEvent('FormularioCompletado', {
-            calificacion: calificacion,
-            lead_score: lead_score,
-            tipo_proyecto: tipoProyecto,
-            cantidad_empleados: empleados,
-            cargo: cargo,
-            tiempo_implementacion: tiempo,
-            total_respuestas: Object.keys(answers).length,
-            timestamp: new Date().toISOString()
-        });
-
-        if (calificacion === "Cualificado") {
-            trackPixelEvent('LeadCualificado', {
-                valor_lead: 100,
-                moneda: 'USD',
-                tipo_lead: 'quiz_completion',
-                score: lead_score
-            });
-        }
-
-        console.log("📩 Respuestas:", answers, "Calificación:", calificacion);
-
-        setTimeout(() => {
-            window.open("https://calendar.app.google/ypeP2A1F6xXufmZj9", "_blank");
-        }, 500);
-    }
-
-    // === EVENTOS DE PÁGINA ===
-    document.addEventListener('DOMContentLoaded', function () {
-        if (typeof fbq !== 'undefined') {
-            fbq('track', 'PageView');
-            fbq('track', 'ViewContent', {
-                content_name: document.title,
-                content_type: 'landing_page'
-            });
-        }
-        
-        trackMetaAPIEvent('PageView');
-        trackMetaAPIEvent('ViewContent', {
-            content_name: document.title,
-            content_type: 'landing_page'
-        });
-    });
-
-    // Botones de información
-    const infoButtons = document.querySelectorAll('.cta-info, .btn-info, .more-info-btn');
-    infoButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const modal = document.getElementById('quizModal');
-            modal.style.display = 'flex';
+        // Mostrar formulario (evento ViewContent)
+        document.getElementById("startQuiz").addEventListener("click", () => {
+            modal.style.display = "flex";
             currentQuestion = 0;
             answers = [];
             loadQuestion();
-            
-            trackPixelEvent('ClicInformacion', {
-                button_text: button.textContent.trim(),
-                button_type: 'info'
-            });
+            sendMetaEvent("ViewContent", { seccion: "Formulario Asesoría Gratuita" });
         });
-    });
 
-</script>
+        // Cargar pregunta
+        function loadQuestion() {
+            const q = quizData[currentQuestion];
+            quizContent.querySelector("h3").innerText = q.question;
+            optionsDiv.innerHTML = q.options
+                .map(
+                    (opt, i) =>
+                        `<input type="radio" id="opt${i}" name="option" value="${opt}">
+         <label for="opt${i}">${opt}</label>`
+                )
+                .join("");
+        }
+
+        // Avanzar entre preguntas
+        nextBtn.addEventListener("click", () => {
+            const selected = document.querySelector("input[name='option']:checked");
+            if (!selected) {
+                alert("Selecciona una opción antes de continuar");
+                return;
+            }
+
+            const answer = selected.value;
+            const question = quizData[currentQuestion].question;
+            answers.push({ question, answer });
+
+            // Enviar evento de respuesta individual
+            sendMetaEvent("AnswerSelected", { pregunta: question, respuesta: answer });
+
+            currentQuestion++;
+
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                handleFormSubmit();
+            }
+        });
+
+        // Cerrar modal al hacer clic afuera
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) modal.style.display = "none";
+        });
+
+        // --- Lógica al terminar el formulario ---
+        function handleFormSubmit() {
+            const formData = Object.fromEntries(answers.map(a => [a.question, a.answer]));
+
+            // Evaluar si es usuario cualificado o no
+            const tipoProyecto = formData["Tipo de proyecto:"];
+            const empleados = formData["Cantidad de empleados en tu empresa:"];
+            const cargo = formData["¿Cuál es tu cargo en la empresa?"];
+            const tiempo = formData["¿En cuánto tiempo te gustaría tener tu proyecto en marcha?"];
+
+            let cualificado = true;
+            if (
+                (tipoProyecto === "Otro" && empleados === "Solo yo" && tiempo === "Más de 3 meses") ||
+                ((empleados === "De 10 a 50" || empleados === "+50") && cargo === "Otro")
+            ) {
+                cualificado = false;
+            }
+
+            // Enviar evento final a Meta
+            sendMetaEvent("FormSubmit", {
+                respuestas: formData,
+                estado: cualificado ? "Cualificado" : "No Cualificado"
+            });
+
+            // Redirigir al calendario en nueva pestaña
+            window.open("https://calendar.app.google/ypeP2A1F6xXufmZj9", "_blank");
+        }
+    </script>
+
 
 
 </body>

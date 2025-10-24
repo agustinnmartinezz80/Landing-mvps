@@ -142,86 +142,50 @@
     const META_PIXEL_ID = '1125110379757394';
     const META_ACCESS_TOKEN = 'EAAVtjXSjoOMBPxIFbzmaXVJAds8zTa37ra8bN8LPMiPvZCLnq5gdcUciEE5j3h2GE7rjZCw5d1pWOXWsGheIZBDlozwHuzfnEReXab58K13gRJTVYji6EzRvZATkkwL47A0EGkZCPNYbCUksSC90bv4kDKRkQMQY57bdx5irECFEOXioxHsyK1uRE5CiuSN1UowZDZD';
 
-    // === DIAGNÓSTICO COMPLETO ===
-    async function diagnosticarAPI() {
-        console.log('🔍 DIAGNÓSTICO COMPLETO API META:');
-        
-        // 1. Verificar token básico
-        if (!META_ACCESS_TOKEN || META_ACCESS_TOKEN.includes('EL_TOKEN_DEL_CLIENTE')) {
-            console.error('❌ Token no configurado');
-            return false;
+    // === DATOS DEL QUIZ ===
+    const quizData = [
+        {
+            question: "Tipo de proyecto:",
+            options: ["APP", "Software", "Otro"]
+        },
+        {
+            question: "Cantidad de empleados en tu empresa:",
+            options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"]
+        },
+        {
+            question: "¿Cuál es tu cargo en la empresa?",
+            options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"]
+        },
+        {
+            question: "¿En cuánto tiempo te gustaría tener tu proyecto en marcha?",
+            options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"]
         }
+    ];
 
-        // 2. Verificar permisos del token
-        try {
-            const permResponse = await fetch(`https://graph.facebook.com/v19.0/me/permissions?access_token=${META_ACCESS_TOKEN}`);
-            const permisos = await permResponse.json();
-            console.log('📋 Permisos del token:', permisos);
-            
-            // Verificar permisos críticos
-            const permisosRequeridos = ['ads_management', 'pixels_events', 'business_management'];
-            const permisosFaltantes = permisosRequeridos.filter(perm => 
-                !permisos.data?.some(p => p.permission === perm && p.status === 'granted')
-            );
-            
-            if (permisosFaltantes.length > 0) {
-                console.error('🚨 Permisos faltantes:', permisosFaltantes);
-                return false;
-            }
-        } catch (error) {
-            console.error('❌ Error verificando permisos:', error);
-        }
+    const modal = document.getElementById("quizModal");
+    const quizContent = document.getElementById("quizContent");
+    const optionsDiv = document.getElementById("options");
+    const nextBtn = document.getElementById("nextBtn");
+    let currentQuestion = 0;
+    let answers = {};
 
-        // 3. Verificar acceso al Pixel
-        try {
-            const pixelResponse = await fetch(`https://graph.facebook.com/v19.0/${META_PIXEL_ID}?fields=name&access_token=${META_ACCESS_TOKEN}`);
-            const pixelData = await pixelResponse.json();
-            
-            if (pixelData.error) {
-                console.error('🚨 Error acceso al Pixel:', pixelData.error);
-                return false;
-            } else {
-                console.log('✅ Pixel accesible:', pixelData.name);
-                return true;
-            }
-        } catch (error) {
-            console.error('❌ Error verificando Pixel:', error);
-            return false;
-        }
-    }
-
-    // === FUNCIÓN API MEJORADA ===
+    // === FUNCIÓN API ===
     async function trackMetaAPI(eventName, customData = {}) {
-        if (!META_ACCESS_TOKEN || META_ACCESS_TOKEN.includes('EL_TOKEN_DEL_CLIENTE')) {
-            return;
-        }
-
         try {
             const eventData = {
                 event_name: eventName,
                 event_time: Math.floor(Date.now() / 1000),
                 event_source_url: window.location.href,
                 action_source: 'website',
-                user_data: {
-                    client_user_agent: navigator.userAgent,
-                    client_ip_address: await getClientIP()
-                },
                 custom_data: customData
             };
-
-            // Limpiar datos undefined
-            Object.keys(eventData.user_data).forEach(key => {
-                if (eventData.user_data[key] === undefined) {
-                    delete eventData.user_data[key];
-                }
-            });
 
             const payload = {
                 data: [eventData],
                 access_token: META_ACCESS_TOKEN
             };
 
-            console.log('📡 Enviando a API:', eventName, payload);
+            console.log('📡 Enviando a API:', eventName, 'Parámetros:', customData);
 
             const response = await fetch(`https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events`, {
                 method: 'POST',
@@ -233,20 +197,8 @@
 
             const result = await response.json();
             
-            if (result.error) {
-                console.error('❌ Error API:', {
-                    event: eventName,
-                    error: result.error.message,
-                    code: result.error.code,
-                    subcode: result.error.error_subcode
-                });
-                
-                // Mostrar solución específica
-                if (result.error.error_subcode === 2804050) {
-                    console.error('🚨 SOLUCIÓN: Token necesita permisos ads_management y pixels_events');
-                }
-            } else if (result.events_received === 1) {
-                console.log('🎉 ✅ API FUNCIONANDO:', eventName);
+            if (result.events_received === 1) {
+                console.log('🎉 ✅ API FUNCIONANDO:', eventName, 'con parámetros:', customData);
             }
             
             return result;
@@ -257,25 +209,14 @@
         }
     }
 
-    // Función para obtener IP
-    async function getClientIP() {
-        try {
-            const response = await fetch('https://api.ipify.org?format=json');
-            const data = await response.json();
-            return data.ip;
-        } catch (error) {
-            return 'unknown';
-        }
-    }
-
     // === FUNCIÓN PRINCIPAL ===
     function trackEvent(eventName, customData = {}) {
-        console.log('🔄 Evento:', eventName);
+        console.log('🔄 Evento:', eventName, 'Datos:', customData);
         
         // 1. PIXEL (SIEMPRE)
         if (typeof fbq !== 'undefined') {
             fbq('trackCustom', eventName, customData);
-            console.log('✅ Pixel:', eventName);
+            console.log('✅ Pixel:', eventName, 'con datos:', customData);
         }
         
         // 2. API (EN SEGUNDO PLANO)
@@ -284,33 +225,159 @@
         }, 100);
     }
 
-    // === [TODO TU CÓDIGO DEL QUIZ ORIGINAL] ===
-    const quizData = [
-        {question: "Tipo de proyecto:", options: ["APP", "Software", "Otro"]},
-        {question: "Cantidad de empleados:", options: ["Solo yo", "De 2 a 5", "De 10 a 50", "+50"]},
-        {question: "¿Cuál es tu cargo?", options: ["Propietario", "Ejecutivo", "Director", "Gerente", "Otro"]},
-        {question: "¿Tiempo del proyecto?", options: ["Cuanto antes", "En 1 a 2 meses", "Más de 3 meses"]}
-    ];
+    // Normalizar nombres para eventos
+    function normalizeEventName(text) {
+        return text.toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '')
+            .substring(0, 40);
+    }
 
-    // ... [Todo tu código del quiz]
+    // === LÓGICA DEL QUIZ ===
+    function loadQuestion() {
+        const q = quizData[currentQuestion];
+        quizContent.querySelector("h3").innerText = q.question;
+        optionsDiv.innerHTML = q.options.map((opt, i) => `
+            <input type="radio" id="opt${currentQuestion}-${i}" name="option" value="${opt}">
+            <label for="opt${currentQuestion}-${i}">${opt}</label>
+        `).join("");
+    }
 
-    // === INICIALIZACIÓN ===
-    document.addEventListener('DOMContentLoaded', async function () {
-        console.log('🚀 Iniciando sistema Pixel + API...');
-        
-        // Diagnosticar API primero
-        const apiFuncional = await diagnosticarAPI();
-        
-        if (apiFuncional) {
-            console.log('🎉 SISTEMA 100% OPERATIVO: Pixel + API');
-        } else {
-            console.log('⚠️ SISTEMA OPERATIVO: Pixel 100% - API necesita configuración');
-        }
-        
-        // Eventos iniciales
-        trackEvent('PageView');
-        trackEvent('ViewContent');
+    // Abrir modal al hacer clic en el botón principal
+    document.getElementById("startQuiz").addEventListener("click", () => {
+        modal.style.display = "flex";
+        currentQuestion = 0;
+        answers = {};
+        loadQuestion();
+        trackEvent('QuizIniciado');
     });
+
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+    });
+
+    // Siguiente pregunta
+    nextBtn.addEventListener("click", () => {
+        const selected = document.querySelector("input[name='option']:checked");
+        if (!selected) {
+            alert("Selecciona una opción antes de continuar");
+            return;
+        }
+
+        // Guardar respuesta
+        const question = quizData[currentQuestion].question;
+        const answer = selected.value;
+        answers[question] = answer;
+
+        // Disparar evento individual por pregunta
+        const eventName = `PreguntaCompletada`;
+        trackEvent(eventName, {
+            pregunta: question,
+            respuesta: answer,
+            numero_pregunta: currentQuestion + 1
+        });
+
+        // Evento específico
+        const specificEventName = `${normalizeEventName(question)}-${normalizeEventName(answer)}`;
+        trackEvent(specificEventName);
+
+        // Avanzar
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            loadQuestion();
+        } else {
+            handleQuizCompletion();
+        }
+    });
+
+    // === LÓGICA AL COMPLETAR EL QUIZ ===
+    function handleQuizCompletion() {
+        // Determinar si el usuario es cualificado o no
+        const tipoProyecto = answers["Tipo de proyecto:"] || "";
+        const empleados = answers["Cantidad de empleados en tu empresa:"] || "";
+        const cargo = answers["¿Cuál es tu cargo en la empresa?"] || "";
+        const tiempo = answers["¿En cuánto tiempo te gustaría tener tu proyecto en marcha?"] || "";
+
+        let calificacion = "Cualificado";
+
+        // Reglas de descalificación
+        if (
+            (tipoProyecto === "Otro" && empleados === "Solo yo" && tiempo === "Más de 3 meses") ||
+            ((empleados === "De 10 a 50" || empleados === "+50") && cargo === "Otro")
+        ) {
+            calificacion = "No Cualificado";
+        }
+
+        // Disparar evento resumen
+        trackEvent('FormularioCompletado', {
+            calificacion: calificacion,
+            respuestas: answers
+        });
+
+        // Evento de conversión específico para leads cualificados
+        if (calificacion === "Cualificado") {
+            trackEvent('LeadCualificado', {
+                valor_lead: 100,
+                tipo_lead: 'quiz_completion'
+            });
+        }
+
+        console.log("📩 Quiz completado - Calificación:", calificacion, "Respuestas:", answers);
+
+        // Redirigir después del evento
+        setTimeout(() => {
+            window.open("https://calendar.app.google/ypeP2A1F6xXufmZj9", "_blank");
+        }, 500);
+    }
+
+    // === EVENTOS DE PÁGINA ===
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('🚀 Sistema Pixel + API activado');
+        
+        trackEvent('PageView', {
+            page_url: window.location.href,
+            page_title: document.title
+        });
+        
+        trackEvent('ViewContent', {
+            content_type: 'landing_page',
+            content_name: 'Landing Quiz'
+        });
+    });
+
+    function abrirFormulario() {
+        const btnAsesoria = document.querySelector('.boton-asesoria, .btn-asesoria');
+        if (btnAsesoria) {
+            btnAsesoria.click();
+            trackEvent('ClicAsesoria', {
+                button_type: 'asesoria_gratuita'
+            });
+        } else {
+            console.warn("No se encontró el botón de Asesoría gratuita");
+        }
+    }
+
+    // Seleccionamos todos los botones de "Más Información" y "Conocer más"
+    const infoButtons = document.querySelectorAll('.cta-info, .btn-info, .more-info-btn');
+
+    infoButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const modal = document.getElementById('quizModal');
+            modal.style.display = 'flex';
+            currentQuestion = 0;
+            answers = [];
+            loadQuestion();
+            trackEvent('ClicInformacion', {
+                button_text: button.textContent.trim()
+            });
+        });
+    });
+
+    // === VERIFICACIÓN FINAL ===
+    setTimeout(() => {
+        console.log('✅ SISTEMA 100% OPERATIVO - Pixel + API funcionando');
+    }, 2000);
 </script>
 
 

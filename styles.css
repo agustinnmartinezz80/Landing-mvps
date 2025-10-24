@@ -340,6 +340,8 @@
             transition: transform 0.2s ease, background 0.3s ease;
         }
 
+
+
         .cta-info:hover,
         .cta-info:hover {
             transform: scale(1.05);

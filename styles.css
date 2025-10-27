@@ -127,11 +127,7 @@
             background-color: #b54fb5;
         }
 
-        footer {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-top: 2rem;
-        }
+
 
 
         .modal {
@@ -721,10 +717,20 @@ h1, h2, h3, h4 {
 }
 
 @media (max-width: 480px) {
+
+    .cta-button {
+        margin-bottom: 20px;
+    }
+
     .main-title {
         font-size: 1.4rem;
         line-height: 1.2;
         padding: 0 10px;
+    }
+
+
+    p.solucion {
+        margin: 40px 0 20px;
     }
 
     .info-card h2 {
@@ -749,10 +755,114 @@ h1, h2, h3, h4 {
     }
 
     .step-text  {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         padding: 10px;
     }
+}
+
+.circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 10px;
+}
+
+.step {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .step-text p {
     font-weight: 600;
 }
+
+
+.steps-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.step {
+    background: rgba(255, 255, 255, 0.08);
+    
+    border-radius: 15px;
+    padding: 30px 20px;
+    max-width: 400px;
+    text-align: center; /* 🔹 Centra todo el contenido dentro */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.circle img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+}
+
+.step-text h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.step-text p {
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+    text-align: center; /* 🔹 Asegura que el texto quede centrado */
+    color: #ddd;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #a93cff, #7a00ff);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.btn-info:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #b65cff, #8a1cff);
+}
+
+
+    .info-extra ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-extra li {
+        position: relative;
+        padding-left: 22px; /* espacio para el ícono */
+        margin-bottom: 14px;
+        line-height: 1.6;
+        color: #e5e5e5;
+    }
+
+    .info-extra li i {
+        position: absolute;
+        left: 0;
+        top: 4px;
+        color: #b65cff;
+        font-size: 0.9rem;
+    }
+
+    /* Alineación del texto */
+    .info-extra li strong {
+        font-weight: 600;
+        margin: 0;
+        padding: 0;
+    }

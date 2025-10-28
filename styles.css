@@ -761,9 +761,8 @@ h1, h2, h3, h4 {
         align-items: center;
         padding: 10px;
     }
-}
 
-.circle {
+    .circle {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -866,3 +865,6 @@ h1, h2, h3, h4 {
         margin: 0;
         padding: 0;
     }
+
+}
+
